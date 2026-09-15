@@ -1,0 +1,32 @@
+name: agente-inmobiliario
+
+services:
+  app:
+    build: .
+    image: agente-inmobiliario:latest
+    container_name: agente-inmobiliario
+    restart: unless-stopped          # 24/7: se levanta solo tras reinicios/crashes
+    ports:
+      - "8000:8000"                  # bind 127.0.0.1 si usas un proxy/reverse en el host
+    environment:
+      # Secretos opcionales por entorno: SI EXISTEN, mandan sobre config.json
+      # (ver README_DEPLOY.md). Si no las defines, la app usa data/config.json.
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
+      - BASE_URL=${BASE_URL:-}
+      - TZ=Europe/Madrid
+    volumes:
+      # PERSISTENCIA: nunca se pierde nada al reiniciar o reconstruir.
+      #   data/   -> config.json + inmuebles.db (+ WAL/SHM)
+      #   inputs/ -> tus exports (JSON/CSV/TXT) y archivos subidos por la web
+      - ./data:/app/data
+      - ./inputs:/app/inputs
+    healthcheck:
+      # Comprueba que la API responde; evita que el orquestador de
+      # "container unhealthy" en los primeros segundos de arranque.
+      test: ["CMD", "sh", "-c", "python -c \"import urllib.request,sys; urllib.request.urlopen('http://127.0.0.1:8000/api/resumen', timeout=5)\" || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    stop_grace_period: 10s

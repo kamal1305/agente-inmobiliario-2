@@ -1,0 +1,33 @@
+# ── Secretos y entornos ─────────────────────────────────────
+# NUNCA commitear: config.json y .env contienen el token de Telegram
+# y los IDs de chat. Los secretos viven en el servidor, no en git.
+.env
+.env.*
+!.env.example
+
+# ── Datos persistentes (van por volumen en Docker/servidor) ─
+# data/* (no data/) para poder versionar el .gitkeep del directorio.
+data/*
+!data/.gitkeep
+*.db
+*.db-shm
+*.db-wal
+inputs/*
+!inputs/.gitkeep
+
+# ── Python ─────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+*.egg-info/
+.pip-wheel-metadata/
+
+# ── Editor / SO ────────────────────────────────────────────
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ── Logs y temp ────────────────────────────────────────────
+*.log

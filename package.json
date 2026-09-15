@@ -1,0 +1,12 @@
+{
+  "name": "agente-inmobiliario",
+  "version": "1.0.0",
+  "description": "Agente Analizador Inmobiliario — dashboard de inmuebles (Jerez de la Frontera). FastAPI + SQLite.",
+  "scripts": {
+    "build": "pip3 install --user -r requirements.txt",
+    "start": "python3 -m uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-3000}"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

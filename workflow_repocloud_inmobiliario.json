@@ -1,0 +1,256 @@
+{
+  "name": "Monitor Inmobiliario Jerez · RepoCloud",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "path": "inmobiliario-alertas",
+        "httpMethod": "POST",
+        "respondWith": "immediately",
+        "options": {}
+      },
+      "id": "eed02571328f",
+      "name": "Webhook · Recibir anuncio",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        220
+      ],
+      "webhookId": "50e46b1cb76b47d5926b",
+      "notes": "POST de tu rastreador/agente aquí (JSON con {titulo, precio, m2, zona, texto, url} o un array). URL: base/webhook/inmobiliario-alertas",
+      "noteFlags": {
+        "waitForWebhook": false
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "aa15142acc5b",
+              "name": "zonaObjetivo",
+              "value": "Jerez de la Frontera",
+              "type": "string"
+            },
+            {
+              "id": "d27e461dee6b",
+              "name": "minPrecio",
+              "value": "75000",
+              "type": "number"
+            },
+            {
+              "id": "f59695a6fae3",
+              "name": "maxPrecio",
+              "value": "120000",
+              "type": "number"
+            },
+            {
+              "id": "f82e1f37ffb1",
+              "name": "maxEurM2",
+              "value": "1600",
+              "type": "number"
+            },
+            {
+              "id": "5c68afbd0817",
+              "name": "rentEurM2Mes",
+              "value": "9",
+              "type": "number"
+            },
+            {
+              "id": "520cdbcba352",
+              "name": "minRentabilidad",
+              "value": "7",
+              "type": "number"
+            },
+            {
+              "id": "7d03f8b73747",
+              "name": "dedupDias",
+              "value": "365",
+              "type": "number"
+            },
+            {
+              "id": "caa8c8ab2646",
+              "name": "telegramChats",
+              "value": "REEMPLAZA_CHAT_TUYO, REEMPLAZA_CHAT_AMIGO",
+              "type": "string"
+            },
+            {
+              "id": "40819cd0aef3",
+              "name": "soloLlamarHoy",
+              "value": "true",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4639e6db992d",
+      "name": "Configuración (Jerez)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Recibe el anuncio (webhook) y extrae precio, m², zona y URL desde\n// campos estructurados o desde el texto libre. Conserva la config.\nfunction parseNum(v) {\n  if (v == null) return null;\n  if (typeof v === 'number') return v;\n  let s = String(v).trim().replace(/[.  \\s]/g, '').replace(',', '.');\n  if (s === '') return null;\n  const n = Number(s);\n  return isNaN(n) ? null : n;\n}\nconst items = $input.all();\nconst salida = [];\nfor (const item of items) {\n  const cuerpo = item.json && item.json.body;\n  const lista = Array.isArray(cuerpo) ? cuerpo\n    : [cuerpo && typeof cuerpo === 'object' ? cuerpo : item.json];\n  for (const a of lista) {\n    const nombre = a.titulo || a.title || a.nombre || '';\n    const texto = a.texto || a.text || a.descripcion || a.description || '';\n    let zona = a.zona || a.zone || a.ubicacion || null;\n    const url = a.url || a.link || a.enlace || (typeof a.href === 'string' ? a.href : null);\n    let precio = a.precio != null ? parseNum(a.precio) : null;\n    let m2 = a.m2 != null ? parseNum(a.m2) : null;\n    const campo = nombre + ' ' + texto;\n    const t = ' ' + campo.toLowerCase() + ' ';\n    if (precio == null) {\n      const mP = t.match(/(\\d{1,3}(?:[.,\\s]\\d{3})+|\\d+)\\s*(?:euros?|eur|\\€)/i);\n      if (mP) precio = parseNum(mP[1]);\n      else { const mK = t.match(/(\\d{2,3})\\s*k\\b/); if (mK) precio = parseNum(mK[1]) * 1000; }\n    }\n    if (m2 == null) {\n      const mM = t.match(/(\\d{2,4})\\s*(?:m2|m²|mts|metros?)\\b/);\n      if (mM) m2 = parseNum(mM[1]);\n    }\n    if (!zona) {\n      for (const z of ['jerez centro', 'casco antiguo', 'santiago', 'san miguel', 'la granja', 'el puerto']) {\n        if (t.includes(z)) { zona = z[0].toUpperCase() + z.slice(1); break; }\n      }\n      if (!zona && t.includes('jerez')) zona = 'Jerez de la Frontera';\n    }\n    salida.push({ json: Object.assign({}, item.json, {\n      titulo: nombre, texto: texto, precio: precio, m2: m2, zona: zona, url: url\n    }) });\n  }\n}\nreturn salida;"
+      },
+      "id": "d75fe126cab5",
+      "name": "Normalizar anuncio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        440,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Aplica el perfil de inversión de Jerez y construye el mensaje HTML.\nfunction fmt(v) { return v == null ? '—' : Math.round(v).toLocaleString('es-ES'); }\nconst RED_FLAGS = ['ocupado','ocupada','okupa','sin posesion','sin posesión','subasta',\n  'no visitable','no se puede visitar','sin cedula','sin cédula',\n  'problemas de cedula','problemas de cédula'];\nconst items = $input.all();\nconst salida = [];\nfor (const item of items) {\n  const p = item.json;\n  const texto = ((p.texto || '') + ' ' + (p.titulo || '')).toLowerCase();\n  const banderas = RED_FLAGS.filter(f => texto.includes(f));\n  const zonaObj = p.zonaObjetivo || 'Jerez de la Frontera';\n  const minPrecio = Number(p.minPrecio) || 75000;\n  const maxPrecio = Number(p.maxPrecio) || 120000;\n  const maxEurM2 = Number(p.maxEurM2) || 1600;\n  const rentEurM2Mes = Number(p.rentEurM2Mes) || 9;\n  const minRent = Number(p.minRentabilidad) || 7;\n  const soloLH = p.soloLlamarHoy === true || String(p.soloLlamarHoy) === 'true';\n  const precio = p.precio, m2 = p.m2, zona = p.zona || zonaObj;\n  if (banderas.length) {\n    salida.push({ json: { ...p, veredicto: 'DESCARTAR',\n      motivo: '🚩 Riesgo: ' + banderas.join(', '), mensaje: null } });\n    continue;\n  }\n  if (precio == null || m2 == null || m2 <= 0) {\n    salida.push({ json: { ...p, veredicto: 'REVISAR',\n      motivo: '⚠️ Datos incompletos (falta precio o m²)', mensaje: null } });\n    continue;\n  }\n  const eurM2 = precio / m2;\n  const rentabilidad = (rentEurM2Mes * m2 * 12 / precio) * 100;\n  const descuento = (1 - eurM2 / maxEurM2) * 100;\n  const enRango = precio >= minPrecio && precio <= maxPrecio;\n  const cumpleTope = eurM2 <= maxEurM2;\n  const cumpleRent = rentabilidad >= minRent;\n  const veredicto = (enRango && cumpleTope && cumpleRent) ? 'LLAMAR HOY' : 'REVISAR';\n  if (soloLH && veredicto !== 'LLAMAR HOY') {\n    salida.push({ json: { ...p, veredicto, mensaje: null,\n      motivo: 'No cumple perfil: fuera de rango/tope €/m² o rentabilidad' } });\n    continue;\n  }\n  const mapsLink = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(zona || zonaObj);\n  const etiqueta = veredicto === 'LLAMAR HOY'\n    ? '🏠 <b>OPORTUNIDAD · LLAMAR HOY</b>' : '👀 <b>REVISAR</b>';\n  let msg = [\n    etiqueta,\n    '📋 ' + (p.titulo || 'Sin título'),\n    '📍 <b>' + (zona || zonaObj) + '</b>',\n    '💶 ' + fmt(precio) + ' € · ' + fmt(m2) + ' m² · ' + fmt(eurM2) + ' €/m²',\n    '📈 Rentabilidad bruta: <b>' + rentabilidad.toFixed(1) + '%</b>',\n    '🎯 Descuento frente a ' + fmt(maxEurM2) + ' €/m²: ' + descuento.toFixed(0) + '%',\n    '🧭 <a href=\"' + mapsLink + '\">Ver ubicación en Google Maps</a>'\n  ].join('\\n');\n  if (p.url) msg += '\\n🔗 <a href=\"' + p.url + '\">Ver anuncio original</a>';\n  salida.push({ json: { ...p,\n    eurM2: Math.round(eurM2 * 100) / 100,\n    rentabilidad: Math.round(rentabilidad * 100) / 100,\n    descuento: Math.round(descuento * 100) / 100,\n    veredicto: veredicto, mensaje: msg, mapsLink: mapsLink } });\n}\nreturn salida;"
+      },
+      "id": "9883d12f4cbd",
+      "name": "Evaluar inversión",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        660,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Deduplicación persistente por URL (o precio+m²+zona) con ventana dedupDias.\nconst items = $input.all();\nif (!items.length) return [];\nconst dias = Number(items[0].json.dedupDias) || 365;\nconst ahora = Date.now();\nconst tope = ahora - dias * 86400 * 1000;\nconst st = $getWorkflowStaticData('global');\nif (!st.vistos) st.vistos = {};\nconst salida = [];\nfor (const item of items) {\n  const p = item.json;\n  if (!p.mensaje) continue;\n  const clave = p.url || ('precio=' + (p.precio || '') + '&m2=' + (p.m2 || '') + '&zona=' + (p.zona || ''));\n  const ultima = st.vistos[clave] || 0;\n  if (!ultima || ultima < tope) salida.push(item);\n  st.vistos[clave] = ahora;\n}\nif (Object.keys(st.vistos).length > 5000) {\n  for (const k of Object.keys(st.vistos)) { if (st.vistos[k] < tope) delete st.vistos[k]; }\n}\nreturn salida;"
+      },
+      "id": "3c59f954cbcf",
+      "name": "Deduplicar 365 días",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        880,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Genera un ítem por cada destinatario de Telegram (persona o grupo).\nconst items = $input.all();\nconst salida = [];\nfor (const item of items) {\n  const p = item.json;\n  if (!p.mensaje) continue;\n  const chats = String(p.telegramChats || '').split(/[,\\s;]+/).filter(Boolean);\n  for (const chatId of chats) {\n    salida.push({ json: { ...p, chatId: chatId.trim(), mensaje: p.mensaje } });\n  }\n}\nreturn salida;"
+      },
+      "id": "9a78ef086f2c",
+      "name": "Expandir destinatarios Telegram",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.mensaje }}",
+        "additionalFields": {
+          "disable_web_page_preview": true,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "b022fd2d7144",
+      "name": "Telegram · Enviar alerta",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1440,
+        220
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "REEMPLAZAR",
+          "name": "Telegram Bot (crea credential)"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook · Recibir anuncio": {
+      "main": [
+        [
+          {
+            "node": "Configuración (Jerez)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Configuración (Jerez)": {
+      "main": [
+        [
+          {
+            "node": "Normalizar anuncio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar anuncio": {
+      "main": [
+        [
+          {
+            "node": "Evaluar inversión",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluar inversión": {
+      "main": [
+        [
+          {
+            "node": "Deduplicar 365 días",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deduplicar 365 días": {
+      "main": [
+        [
+          {
+            "node": "Expandir destinatarios Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expandir destinatarios Telegram": {
+      "main": [
+        [
+          {
+            "node": "Telegram · Enviar alerta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "active": false,
+  "description": "Recibe anuncios (webhook), filtra por el perfil de inversión de Jerez de la Frontera (75k-120k €, máx 1600 €/m², rentabilidad 7%), deduplica 365 días y envía la alerta a varios chats de Telegram con enlace a Google Maps y al anuncio original."
+}

@@ -1,0 +1,27 @@
+# Imágenes Docker (se regeneran con docker build)
+__pycache__/
+*.py[cod]
+
+# Entorno local / venv (nunca al contenedor)
+venv/
+.venv/
+*.egg-info/
+.pip-wheel-metadata/
+
+# Datos y config local: van por VOLUMEN, no se copian a la imagen
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# Control de versiones / IDE / SO
+.git/
+.gitignore
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Documentación de despliegue (no necesaria dentro de la imagen)
+README_DEPLOY.md
+README.md
