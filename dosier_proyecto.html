@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Dosier corporativo del proyecto Agente Analizador Inmobiliario · Jerez de la Frontera: arquitectura, motor de scoring de 100 puntos, veredictos automáticos, microzonas y despliegue.">
+  <meta name="theme-color" content="#18181b">
+  <title>Dosier del Agente Inmobiliario</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'media',
+      theme: {
+        extend: {
+          colors: {
+            zinc: { 950: '#09090b' },
+          },
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* ---------- Base ---------- */
+    :root {
+      --bg: #f4f4f5;            /* zinc-100 */
+      --card: #ffffff;
+      --ink: #18181b;           /* zinc-900 */
+      --ink-soft: #3f3f46;      /* zinc-700 */
+      --muted: #71717a;         /* zinc-500 */
+      --faint: #a1a1aa;         /* zinc-400 */
+      --line: #e4e4e7;          /* zinc-200 */
+      --accent: #8b5cf6;        /* violet-500 */
+      --accent-bright: #a78bfa; /* violet-400 */
+      --arrow: #a1a1aa;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #09090b;          /* zinc-950 */
+        --card: #18181b;        /* zinc-900 */
+        --ink: #fafafa;         /* zinc-50 */
+        --ink-soft: #e4e4e7;    /* zinc-200 */
+        --muted: #a1a1aa;       /* zinc-400 */
+        --faint: #71717a;       /* zinc-500 */
+        --line: #27272a;        /* zinc-800 */
+        --accent: #a78bfa;      /* violet-400 */
+        --accent-bright: #8b5cf6;
+        --arrow: #52525b;
+      }
+    }
+
+    html {
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    body { margin: 0; background: var(--bg); }
+    ::selection { background: rgba(139, 92, 246, .25); }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-thumb { background: #a1a1aa; border-radius: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    @media (prefers-color-scheme: dark) {
+      ::-webkit-scrollbar-thumb { background: #52525b; }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      html { scroll-behavior: smooth; }
+    }
+
+    section[id] { scroll-margin-top: 96px; }
+    @media (max-width: 640px) { section[id] { scroll-margin-top: 76px; } }
+
+    .eyebrow {
+      font-size: .75rem;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    /* ---------- Motivo de la portada ---------- */
+    .bg-gridlines {
+      background-image:
+        linear-gradient(to right, rgba(255, 255, 255, .05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, .05) 1px, transparent 1px);
+      background-size: 38px 38px;
+    }
+    .glow-violet {
+      background-image: radial-gradient(1100px 520px at 88% -12%, rgba(139, 92, 246, .22), transparent 62%);
+    }
+
+    /* ---------- Barras animadas (scoring y microzonas) ---------- */
+    @keyframes growBar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+    .bar-fill {
+      transform-origin: left center;
+      animation: growBar 1.15s cubic-bezier(.22, 1, .36, 1) both;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .bar-fill { animation: none; }
+    }
+
+    /* ---------- Diagrama SVG ---------- */
+    svg text { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+    .dg-node { fill: var(--card); stroke: var(--line); stroke-width: 1.5; }
+    .dg-node-hot { fill: #ecfdf5; stroke: #10b981; stroke-width: 1.5; }          /* emerald-50 / emerald-500 */
+    @media (prefers-color-scheme: dark) { .dg-node-hot { fill: #022c22; stroke: #10b981; } }
+    .dg-arr { fill: none; stroke: var(--arrow); stroke-width: 1.5; }
+    .dg-t { fill: var(--ink); font-weight: 700; font-size: 14.5px; }
+    .dg-s { fill: var(--muted); font-size: 11.5px; }
+    .dg-f { fill: var(--faint); font-size: 11px; }
+    .dg-em { font-size: 20px; }
+    .dg-note { fill: var(--faint); font-size: 11px; }
+  </style>
+</head>
+
+<body class="bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans antialiased min-h-screen">
+
+  <!-- ===== Barra superior ===== -->
+  <header class="sticky z-40 bg-zinc-100/85 dark:bg-zinc-950/85 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800"
+          style="top: env(safe-area-inset-top, 0);">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="h-14 flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-zinc-600 to-zinc-900 dark:from-zinc-600 dark:to-zinc-800 flex items-center justify-center text-lg ring-1 ring-black/10 dark:ring-white/10 shadow-inner">🏠</div>
+        <div class="min-w-0 mr-auto">
+          <p class="font-extrabold text-sm leading-tight tracking-tight truncate">Agente Analizador Inmobiliario</p>
+          <p class="text-[11px] text-zinc-500 dark:text-zinc-400 leading-tight truncate">Dosier de proyecto · Jerez de la Frontera</p>
+        </div>
+        <nav aria-label="Secciones" class="hidden lg:flex items-center gap-5">
+          <a href="#resumen" class="text-xs font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition">Resumen</a>
+          <a href="#scoring" class="text-xs font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition">Scoring</a>
+          <a href="#veredictos" class="text-xs font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition">Veredictos</a>
+          <a href="#microzonas" class="text-xs font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition">Microzonas</a>
+          <a href="#infraestructura" class="text-xs font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition">Infraestructura</a>
+          <a href="#metricas" class="text-xs font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition">Métricas</a>
+        </nav>
+        <span class="hidden sm:inline-flex items-center rounded-full bg-zinc-200/70 dark:bg-zinc-800/80 ring-1 ring-zinc-300/70 dark:ring-zinc-700 px-3 py-1 text-[11px] font-bold text-zinc-700 dark:text-zinc-300">Edición 1 · 2026</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-16 pb-24 space-y-20 sm:space-y-28">
+
+    <!-- ===== 1 · Portada ===== -->
+    <section class="relative overflow-hidden rounded-[2rem] bg-zinc-900 text-white border border-zinc-800 shadow-2xl shadow-zinc-950/25">
+      <div class="bg-gridlines glow-violet absolute inset-0 pointer-events-none"></div>
+      <div class="relative p-7 sm:p-12 lg:p-14">
+
+        <div class="flex items-start gap-4">
+          <div class="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-gradient-to-br from-zinc-500 to-zinc-900 ring-1 ring-white/20 shadow-inner flex items-center justify-center text-2xl sm:text-3xl">🏠</div>
+          <div class="pt-0.5">
+            <p class="eyebrow text-zinc-400">Dosier de proyecto · Septiembre 2026</p>
+            <p class="mt-1 text-[11px] sm:text-xs text-zinc-400">Documento técnico-corporativo · 15 de septiembre de 2026</p>
+          </div>
+        </div>
+
+        <h1 class="mt-8 sm:mt-10 text-4xl sm:text-6xl font-black tracking-tight leading-[1.04] text-balance">
+          Agente Analizador<br class="hidden sm:block"> Inmobiliario
+        </h1>
+
+        <p class="mt-5 max-w-2xl text-zinc-300 text-sm sm:text-lg leading-relaxed">
+          Detección, evaluación y alerta inteligente de oportunidades de inversión residencial
+          en <span class="text-white font-semibold">Jerez de la Frontera</span> (Cádiz, España), con un motor
+          de scoring de 100 puntos, notificación automática por Telegram y dashboard web con modo oscuro.
+        </p>
+
+        <div class="mt-7 flex flex-wrap gap-2">
+          <span class="rounded-full bg-white/10 ring-1 ring-white/15 px-3.5 py-1.5 text-xs font-semibold text-zinc-200">📍 Jerez de la Frontera · Cádiz</span>
+          <span class="rounded-full bg-white/10 ring-1 ring-white/15 px-3.5 py-1.5 text-xs font-semibold text-zinc-200">🎯 Presupuesto 75.000 – 120.000 €</span>
+          <span class="rounded-full bg-white/10 ring-1 ring-white/15 px-3.5 py-1.5 text-xs font-semibold text-zinc-200">🏷️ Tope 1.600 €/m²</span>
+          <span class="rounded-full bg-white/10 ring-1 ring-white/15 px-3.5 py-1.5 text-xs font-semibold text-zinc-200">📈 Rentabilidad mínima 7%</span>
+        </div>
+
+        <div class="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-2 border-t border-white/10 pt-8">
+          <p class="eyebrow text-zinc-500 mb-1">Contenido</p>
+          <div></div>
+          <div class="grid grid-cols-2 gap-x-8 gap-y-2.5 sm:col-span-2">
+            <a href="#resumen" class="text-[13px] font-semibold text-zinc-400 hover:text-white transition"><span class="text-violet-300/80 font-extrabold">01</span>&ensp;Resumen ejecutivo</a>
+            <a href="#arquitectura" class="text-[13px] font-semibold text-zinc-400 hover:text-white transition"><span class="text-violet-300/80 font-extrabold">02</span>&ensp;Arquitectura</a>
+            <a href="#scoring" class="text-[13px] font-semibold text-zinc-400 hover:text-white transition"><span class="text-violet-300/80 font-extrabold">03</span>&ensp;Motor de scoring</a>
+            <a href="#veredictos" class="text-[13px] font-semibold text-zinc-400 hover:text-white transition"><span class="text-violet-300/80 font-extrabold">04</span>&ensp;Veredictos automáticos</a>
+            <a href="#microzonas" class="text-[13px] font-semibold text-zinc-400 hover:text-white transition"><span class="text-violet-300/80 font-extrabold">05</span>&ensp;Microzonas</a>
+            <a href="#infraestructura" class="text-[13px] font-semibold text-zinc-400 hover:text-white transition"><span class="text-violet-300/80 font-extrabold">06</span>&ensp;Infraestructura</a>
+            <a href="#metricas" class="text-[13px] font-semibold text-zinc-400 hover:text-white transition"><span class="text-violet-300/80 font-extrabold">07</span>&ensp;Métricas del proyecto</a>
+            <a href="#proximos" class="text-[13px] font-semibold text-zinc-400 hover:text-white transition"><span class="text-violet-300/80 font-extrabold">08</span>&ensp;Próximos pasos</a>
+          </div>
+        </div>
+
+        <div class="mt-10 grid grid-cols-3 gap-4 border-t border-white/10 pt-7">
+          <div>
+            <p class="text-2xl sm:text-3xl font-extrabold tabular-nums tracking-tight">0–100</p>
+            <p class="mt-1 text-[11px] uppercase tracking-wider text-zinc-500 font-semibold">Puntuación del motor</p>
+          </div>
+          <div>
+            <p class="text-2xl sm:text-3xl font-extrabold tabular-nums tracking-tight">24/7</p>
+            <p class="mt-1 text-[11px] uppercase tracking-wider text-zinc-500 font-semibold">Vigilancia sin depender de un PC</p>
+          </div>
+          <div>
+            <p class="text-2xl sm:text-3xl font-extrabold tabular-nums tracking-tight">2 + 1 🤖</p>
+            <p class="mt-1 text-[11px] uppercase tracking-wider text-zinc-500 font-semibold">Equipo inversor y bot</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 2 · Resumen ejecutivo ===== -->
+    <section id="resumen">
+      <header class="mb-8 sm:mb-10">
+        <p class="eyebrow text-zinc-400 dark:text-zinc-500"><span class="text-violet-500 dark:text-violet-400 font-extrabold">01</span>&ensp;Resumen ejecutivo</p>
+        <h2 class="mt-2.5 text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 text-balance">Qué hace el sistema, en tres líneas</h2>
+      </header>
+
+      <div class="grid lg:grid-cols-5 gap-10">
+        <div class="lg:col-span-3">
+          <div class="border-l-2 border-violet-500 dark:border-violet-400 pl-5 sm:pl-6 space-y-4">
+            <p class="text-[15px] sm:text-base leading-relaxed text-zinc-700 dark:text-zinc-300">
+              El Agente Analizador Inmobiliario vigila el mercado inmobiliario de Jerez de la Frontera
+              <strong class="text-zinc-900 dark:text-zinc-50 font-semibold">las 24 horas</strong>: lee cada aviso que llega al plugin de búsqueda
+              por correo (Gmail vía IMAP), extrae precio, superficie y zona, y lo contrasta con una
+              <strong class="text-zinc-900 dark:text-zinc-50 font-semibold">red de microzonas</strong> propia.
+            </p>
+            <p class="text-[15px] sm:text-base leading-relaxed text-zinc-700 dark:text-zinc-300">
+              Un <strong class="text-violet-600 dark:text-violet-300 font-semibold">motor de scoring de 100 puntos</strong> pondera descuento frente al
+              tope de precio, rentabilidad bruta anual, ubicación, estado de reforma, liquidez y documentación,
+              para decidir en segundos si un inmueble merece inversión, revisión o descarte.
+            </p>
+            <p class="text-[15px] sm:text-base leading-relaxed text-zinc-700 dark:text-zinc-300">
+              Cuando una propiedad alcanza <strong class="text-zinc-900 dark:text-zinc-50 font-semibold">75 puntos o más</strong>, el sistema dispara
+              automáticamente una alerta <strong class="text-emerald-600 dark:text-emerald-400 font-bold">«LLAMAR HOY»</strong> al grupo de inversores de
+              Telegram, archiva la operación en Google Sheets y la publica en el dashboard web.
+            </p>
+          </div>
+          <p class="mt-6 text-xs text-zinc-400 dark:text-zinc-500 leading-relaxed max-w-xl">
+            Todo el flujo se ejecuta de forma automática y redundante —n8n, API y despliegue en la nube—
+            de modo que ninguna oportunidad depende de un ordenador personal encendido.
+          </p>
+        </div>
+
+        <div class="lg:col-span-2">
+          <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-5 sm:p-6">
+            <p class="eyebrow text-zinc-400 dark:text-zinc-500 mb-4">Perfil de inversión</p>
+            <dl class="divide-y divide-zinc-100 dark:divide-zinc-800">
+              <div class="flex items-baseline justify-between gap-4 py-3.5">
+                <dt class="text-xs font-semibold text-zinc-500 dark:text-zinc-400">Presupuesto objetivo</dt>
+                <dd class="text-right text-base font-extrabold tabular-nums">75 – 120 k€</dd>
+              </div>
+              <div class="flex items-baseline justify-between gap-4 py-3.5">
+                <dt class="text-xs font-semibold text-zinc-500 dark:text-zinc-400">Tope de compra</dt>
+                <dd class="text-right text-base font-extrabold tabular-nums">1.600 €/m²</dd>
+              </div>
+              <div class="flex items-baseline justify-between gap-4 py-3.5">
+                <dt class="text-xs font-semibold text-zinc-500 dark:text-zinc-400">Rentabilidad mínima</dt>
+                <dd class="text-right text-base font-extrabold tabular-nums">7% bruta</dd>
+              </div>
+              <div class="flex items-baseline justify-between gap-4 py-3.5">
+                <dt class="text-xs font-semibold text-zinc-500 dark:text-zinc-400">Umbral «LLAMAR HOY»</dt>
+                <dd class="text-right text-base font-extrabold tabular-nums"><span class="text-violet-600 dark:text-violet-300">≥ 75 pts</span></dd>
+              </div>
+            </dl>
+            <p class="mt-3 text-[11px] text-zinc-400 dark:text-zinc-500 leading-relaxed">
+              Estos umbrales viven en <code class="font-mono">data/config.json</code> y son ajustables desde el panel sin tocar código.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 3 · Arquitectura ===== -->
+    <section id="arquitectura">
+      <header class="mb-8 sm:mb-10">
+        <p class="eyebrow text-zinc-400 dark:text-zinc-500"><span class="text-violet-500 dark:text-violet-400 font-extrabold">02</span>&ensp;Arquitectura</p>
+        <h2 class="mt-2.5 text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 text-balance">Un pipeline 24/7, del correo a la alerta</h2>
+        <p class="mt-3 max-w-2xl text-sm sm:text-base text-zinc-500 dark:text-zinc-400 leading-relaxed">
+          Gmail alimenta a n8n; n8n decide, archiva y alerta; FastAPI expone los resultados al dashboard.
+          Un ping programado cada 8 minutos mantiene el despliegue despierto sin coste extra.
+        </p>
+      </header>
+
+      <div class="overflow-x-auto">
+        <svg role="img" aria-label="Diagrama de arquitectura del sistema, flujo desde Gmail hasta el dashboard" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 590" class="w-full mx-auto" style="min-width: 600px; max-width: 760px;">
+          <defs>
+            <marker id="arw" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="var(--arrow)"></path>
+            </marker>
+          </defs>
+
+          <!-- Gmail -->
+          <rect class="dg-node" x="275" y="16" width="210" height="96" rx="18"></rect>
+          <text class="dg-em" x="380" y="50" text-anchor="middle">✉️</text>
+          <text class="dg-t" x="380" y="76" text-anchor="middle">Gmail · IMAP</text>
+          <text class="dg-s" x="380" y="92" text-anchor="middle">avisos de nuevos anuncios</text>
+
+          <!-- Flecha Gmail → n8n -->
+          <line class="dg-arr" x1="380" y1="112" x2="380" y2="170" marker-end="url(#arw)"></line>
+
+          <!-- n8n -->
+          <rect class="dg-node" x="275" y="176" width="210" height="96" rx="18"></rect>
+          <text class="dg-em" x="380" y="210" text-anchor="middle">⚙️</text>
+          <text class="dg-t" x="380" y="236" text-anchor="middle">n8n · RepoCloud</text>
+          <text class="dg-s" x="380" y="252" text-anchor="middle">Monitor Inmobiliario Jerez</text>
+
+          <!-- Distibuidor -->
+          <line class="dg-arr" x1="380" y1="272" x2="380" y2="306"></line>
+          <line class="dg-arr" x1="150" y1="306" x2="610" y2="306"></line>
+          <line class="dg-arr" x1="150" y1="306" x2="150" y2="326" marker-end="url(#arw)"></line>
+          <line class="dg-arr" x1="380" y1="306" x2="380" y2="326" marker-end="url(#arw)"></line>
+          <line class="dg-arr" x1="610" y1="306" x2="610" y2="326" marker-end="url(#arw)"></line>
+
+          <!-- Telegram -->
+          <rect class="dg-node-hot" x="45" y="330" width="210" height="96" rx="18"></rect>
+          <text class="dg-em" x="150" y="364" text-anchor="middle">📲</text>
+          <text class="dg-t" x="150" y="390" text-anchor="middle">Telegram</text>
+          <text class="dg-s" x="150" y="406" text-anchor="middle">alerta instantánea al grupo</text>
+
+          <!-- Google Sheets -->
+          <rect class="dg-node" x="275" y="330" width="210" height="96" rx="18"></rect>
+          <text class="dg-em" x="380" y="364" text-anchor="middle">📒</text>
+          <text class="dg-t" x="380" y="390" text-anchor="middle">Google Sheets</text>
+          <text class="dg-s" x="380" y="406" text-anchor="middle">histórico · 10 columnas</text>
+
+          <!-- FastAPI -->
+          <rect class="dg-node" x="505" y="330" width="210" height="96" rx="18"></rect>
+          <text class="dg-em" x="610" y="364" text-anchor="middle">🐍</text>
+          <text class="dg-t" x="610" y="390" text-anchor="middle">FastAPI</text>
+          <text class="dg-s" x="610" y="406" text-anchor="middle">/api/analizar · scoring 100 pts</text>
+
+          <!-- Flecha FastAPI → Dashboard -->
+          <line class="dg-arr" x1="610" y1="426" x2="610" y2="452" marker-end="url(#arw)"></line>
+
+          <!-- Dashboard -->
+          <rect class="dg-node" x="505" y="456" width="210" height="96" rx="18"></rect>
+          <text class="dg-em" x="610" y="490" text-anchor="middle">📊</text>
+          <text class="dg-t" x="610" y="516" text-anchor="middle">Dashboard web</text>
+          <text class="dg-s" x="610" y="532" text-anchor="middle">Render · dark mode · responsive</text>
+
+          <text class="dg-note" x="380" y="576" text-anchor="middle">◷ n8n Schedule Trigger — ping cada 8 min · mantiene Render despierto</text>
+        </svg>
+      </div>
+
+      <p class="mt-5 max-w-3xl mx-auto text-center text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+        Flujo: <strong class="text-zinc-700 dark:text-zinc-300">Gmail (IMAP)</strong> captura cada aviso →
+        <strong class="text-zinc-700 dark:text-zinc-300">n8n</strong> orquesta la monitorización →
+        según el resultado se emite la alerta <strong class="text-emerald-600 dark:text-emerald-400">Telegram</strong>,
+        se registra el histórico en <strong class="text-zinc-700 dark:text-zinc-300">Sheets</strong> y se expone la
+        oportunidad vía <strong class="text-zinc-700 dark:text-zinc-300">FastAPI</strong> en el dashboard.
+      </p>
+
+      <div class="mt-8 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-5 sm:p-6">
+        <div class="flex items-center justify-between gap-3 flex-wrap mb-4">
+          <p class="text-sm font-bold text-zinc-900 dark:text-zinc-100">Workflow «Monitor Inmobiliario Jerez»</p>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300 text-[11px] font-bold px-3 py-1">⚙️ 7 nodos</span>
+        </div>
+        <ol class="flex flex-wrap items-center gap-y-2 gap-x-0">
+          <li class="flex items-center gap-2">
+            <span class="rounded-full bg-zinc-100 dark:bg-zinc-800 px-3 py-1 text-xs font-semibold text-zinc-700 dark:text-zinc-300">Webhook · Recibir anuncio</span>
+            <span class="text-zinc-300 dark:text-zinc-600 font-bold">→</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="rounded-full bg-zinc-100 dark:bg-zinc-800 px-3 py-1 text-xs font-semibold text-zinc-700 dark:text-zinc-300">Configuración (Jerez)</span>
+            <span class="text-zinc-300 dark:text-zinc-600 font-bold">→</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="rounded-full bg-zinc-100 dark:bg-zinc-800 px-3 py-1 text-xs font-semibold text-zinc-700 dark:text-zinc-300">Normalizar anuncio</span>
+            <span class="text-zinc-300 dark:text-zinc-600 font-bold">→</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="rounded-full bg-zinc-100 dark:bg-zinc-800 px-3 py-1 text-xs font-semibold text-zinc-700 dark:text-zinc-300">Evaluar inversión</span>
+            <span class="text-zinc-300 dark:text-zinc-600 font-bold">→</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="rounded-full bg-zinc-100 dark:bg-zinc-800 px-3 py-1 text-xs font-semibold text-zinc-700 dark:text-zinc-300">Deduplicar 365 días</span>
+            <span class="text-zinc-300 dark:text-zinc-600 font-bold">→</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="rounded-full bg-zinc-100 dark:bg-zinc-800 px-3 py-1 text-xs font-semibold text-zinc-700 dark:text-zinc-300">Expandir destinatarios</span>
+            <span class="text-zinc-300 dark:text-zinc-600 font-bold">→</span>
+          </li>
+          <li>
+            <span class="rounded-full bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 px-3 py-1 text-xs font-bold">Telegram · Enviar alerta</span>
+          </li>
+        </ol>
+        <p class="mt-4 text-[11px] text-zinc-400 dark:text-zinc-500 leading-relaxed">
+          Los 4 bloques de código JavaScript del workflow están validados; la deduplicación usa almacenamiento persistente de RepoCloud para no repetir anuncios en 365 días.
+        </p>
+      </div>
+    </section>
+
+    <!-- ===== 4 · Motor de scoring ===== -->
+    <section id="scoring">
+      <header class="mb-8 sm:mb-10">
+        <p class="eyebrow text-zinc-400 dark:text-zinc-500"><span class="text-violet-500 dark:text-violet-400 font-extrabold">03</span>&ensp;Motor de scoring</p>
+        <h2 class="mt-2.5 text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 text-balance">Seis factores · 100 puntos</h2>
+        <p class="mt-3 max-w-2xl text-sm sm:text-base text-zinc-500 dark:text-zinc-400 leading-relaxed">
+          Cada anuncio se puntúa de 0 a 100 según estos pesos configurables desde el panel de ajustes.
+        </p>
+      </header>
+
+      <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-5 sm:p-8">
+        <div class="divide-y divide-zinc-100 dark:divide-zinc-800">
+
+          <div class="grid sm:grid-cols-[190px_1fr] gap-3 sm:gap-6 items-center py-5 first:pt-0 sm:first:pt-0">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl font-extrabold tabular-nums text-violet-600 dark:text-violet-300 w-9 text-right shrink-0">35</span>
+              <div>
+                <p class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Descuento</p>
+                <p class="text-[11px] text-zinc-400 dark:text-zinc-500">frente al tope €/m²</p>
+              </div>
+            </div>
+            <div>
+              <div class="h-2.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                <div class="bar-fill h-full rounded-full bg-gradient-to-r from-violet-500 to-violet-300" style="width:35%"></div>
+              </div>
+              <p class="mt-2 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                Cuánto está el inmueble por debajo del máximo de compra de la zona. Primer criterio de decisión.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid sm:grid-cols-[190px_1fr] gap-3 sm:gap-6 items-center py-5">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl font-extrabold tabular-nums text-violet-600 dark:text-violet-300 w-9 text-right shrink-0">25</span>
+              <div>
+                <p class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Rentabilidad bruta anual</p>
+                <p class="text-[11px] text-zinc-400 dark:text-zinc-500">alquiler vs. compra</p>
+              </div>
+            </div>
+            <div>
+              <div class="h-2.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                <div class="bar-fill h-full rounded-full bg-gradient-to-r from-violet-500 to-violet-300" style="width:25%"></div>
+              </div>
+              <p class="mt-2 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                Alquiler estimado anual frente al precio de compra; el perfil exige un mínimo del 7%.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid sm:grid-cols-[190px_1fr] gap-3 sm:gap-6 items-center py-5">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl font-extrabold tabular-nums text-violet-600 dark:text-violet-300 w-9 text-right shrink-0">15</span>
+              <div>
+                <p class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Ubicación</p>
+                <p class="text-[11px] text-zinc-400 dark:text-zinc-500">microzona de demanda</p>
+              </div>
+            </div>
+            <div>
+              <div class="h-2.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                <div class="bar-fill h-full rounded-full bg-gradient-to-r from-violet-500 to-violet-300" style="width:15%"></div>
+              </div>
+              <p class="mt-2 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                Centro, Santiago, San Miguel, La Granja… cada microzona tiene su tarifa de alquiler de referencia.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid sm:grid-cols-[190px_1fr] gap-3 sm:gap-6 items-center py-5">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl font-extrabold tabular-nums text-violet-600 dark:text-violet-300 w-9 text-right shrink-0">10</span>
+              <div>
+                <p class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Estado de reforma</p>
+                <p class="text-[11px] text-zinc-400 dark:text-zinc-500">coste de puesta a punto</p>
+              </div>
+            </div>
+            <div>
+              <div class="h-2.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                <div class="bar-fill h-full rounded-full bg-gradient-to-r from-violet-500 to-violet-300" style="width:10%"></div>
+              </div>
+              <p class="mt-2 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                Reformado, reforma ligera, integral o ruina: cuanto más haya que invertir, menos puntúa.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid sm:grid-cols-[190px_1fr] gap-3 sm:gap-6 items-center py-5">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl font-extrabold tabular-nums text-violet-600 dark:text-violet-300 w-9 text-right shrink-0">10</span>
+              <div>
+                <p class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Liquidez</p>
+                <p class="text-[11px] text-zinc-400 dark:text-zinc-500">facilidad de alquiler/reventa</p>
+              </div>
+            </div>
+            <div>
+              <div class="h-2.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                <div class="bar-fill h-full rounded-full bg-gradient-to-r from-violet-500 to-violet-300" style="width:10%"></div>
+              </div>
+              <p class="mt-2 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                Amueblado, ascensor, vistas, orientación… atributos que aceleran la salida en alquiler o venta.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid sm:grid-cols-[190px_1fr] gap-3 sm:gap-6 items-center py-5">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl font-extrabold tabular-nums text-violet-600 dark:text-violet-300 w-9 text-right shrink-0">5</span>
+              <div>
+                <p class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Documentación</p>
+                <p class="text-[11px] text-zinc-400 dark:text-zinc-500">cédula y licencias</p>
+              </div>
+            </div>
+            <div>
+              <div class="h-2.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                <div class="bar-fill h-full rounded-full bg-gradient-to-r from-violet-500 to-violet-300" style="width:5%"></div>
+              </div>
+              <p class="mt-2 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                Cédula de habitabilidad, licencia de alquiler, cargas: la papelera legal resta o descarta.
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="mt-6 flex items-center gap-3 flex-wrap rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 px-4 py-3">
+          <span class="text-sm font-extrabold tabular-nums text-zinc-900 dark:text-zinc-100">∑ 100</span>
+          <span class="text-xs text-zinc-500 dark:text-zinc-400">pesos configurables desde el panel · antes de puntuar, el filtro de banderas rojas decide sobre el descarte</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 5 · Veredictos ===== -->
+    <section id="veredictos">
+      <header class="mb-8 sm:mb-10">
+        <p class="eyebrow text-zinc-400 dark:text-zinc-500"><span class="text-violet-500 dark:text-violet-400 font-extrabold">04</span>&ensp;Veredictos automáticos</p>
+        <h2 class="mt-2.5 text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 text-balance">Tres resultados posibles, un criterio claro</h2>
+        <p class="mt-3 max-w-2xl text-sm sm:text-base text-zinc-500 dark:text-zinc-400 leading-relaxed">
+          El veredicto sale de la suma del scoring y del filtro de seguridad de banderas rojas.
+        </p>
+      </header>
+
+      <div class="grid md:grid-cols-3 gap-4 sm:gap-5">
+
+        <article class="rounded-2xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/30 p-5 sm:p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-2xl">🟢</div>
+            <div>
+              <h3 class="font-extrabold text-emerald-800 dark:text-emerald-300">LLAMAR HOY</h3>
+              <p class="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 tabular-nums">Puntuación ≥ 75</p>
+            </div>
+          </div>
+          <p class="text-sm text-emerald-900/80 dark:text-emerald-100/80 leading-relaxed">
+            La oportunidad cumple todos los criterios del perfil: precio bajo el tope, rentabilidad sólida y buena liquidez.
+          </p>
+          <p class="mt-4 pt-4 border-t border-emerald-300/60 dark:border-emerald-900 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+            Acción → alerta Telegram inmediata y registro en el histórico.
+          </p>
+        </article>
+
+        <article class="rounded-2xl border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/30 p-5 sm:p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-2xl">🟡</div>
+            <div>
+              <h3 class="font-extrabold text-amber-800 dark:text-amber-300">REVISAR</h3>
+              <p class="text-[11px] font-bold text-amber-700 dark:text-amber-400 tabular-nums">Puntuación 40 – 74</p>
+            </div>
+          </div>
+          <p class="text-sm text-amber-900/80 dark:text-amber-100/80 leading-relaxed">
+            Merece un vistazo pero no es urgente: un factor flojea (suele ser el descuento o la rentabilidad).
+          </p>
+          <p class="mt-4 pt-4 border-t border-amber-300/60 dark:border-amber-900 text-xs font-semibold text-amber-800 dark:text-amber-300">
+            Acción → queda en el dashboard para seguimiento, sin notificación.
+          </p>
+        </article>
+
+        <article class="rounded-2xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/30 p-5 sm:p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900/50 flex items-center justify-center text-2xl">🔴</div>
+            <div>
+              <h3 class="font-extrabold text-red-800 dark:text-red-300">DESCARTAR</h3>
+              <p class="text-[11px] font-bold text-red-700 dark:text-red-400">Bandera roja detectada</p>
+            </div>
+          </div>
+          <p class="text-sm text-red-900/80 dark:text-red-100/80 leading-relaxed">
+            El anuncio no avanza: se bloquea antes de puntuar por riesgo de ocupación, posesión, documentación o acceso.
+          </p>
+          <p class="mt-4 pt-4 border-t border-red-300/60 dark:border-red-900 text-xs font-semibold text-red-800 dark:text-red-300">
+            Acción → descarte automático; no se notifica.
+          </p>
+        </article>
+
+      </div>
+
+      <div class="mt-6 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-5 sm:p-6">
+        <p class="text-xs font-bold uppercase tracking-wide text-zinc-400 dark:text-zinc-500 mb-3">🚩 Banderas rojas que bloquean el análisis</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 text-xs font-semibold px-3 py-1.5">Ocupado / ocupada</span>
+          <span class="rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 text-xs font-semibold px-3 py-1.5">Okupas</span>
+          <span class="rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 text-xs font-semibold px-3 py-1.5">Sin posesión</span>
+          <span class="rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 text-xs font-semibold px-3 py-1.5">Subasta</span>
+          <span class="rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 text-xs font-semibold px-3 py-1.5">No visitable</span>
+          <span class="rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 text-xs font-semibold px-3 py-1.5">Sin cédula</span>
+          <span class="rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 text-xs font-semibold px-3 py-1.5">Problemas de cédula</span>
+          <span class="rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 text-xs font-semibold px-3 py-1.5">Derramas pendientes</span>
+          <span class="rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 text-xs font-semibold px-3 py-1.5">Bajo interior oscuro</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 6 · Microzonas ===== -->
+    <section id="microzonas">
+      <header class="mb-8 sm:mb-10">
+        <p class="eyebrow text-zinc-400 dark:text-zinc-500"><span class="text-violet-500 dark:text-violet-400 font-extrabold">05</span>&ensp;Microzonas</p>
+        <h2 class="mt-2.5 text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 text-balance">Alquiler estimado por microzona</h2>
+        <p class="mt-3 max-w-2xl text-sm sm:text-base text-zinc-500 dark:text-zinc-400 leading-relaxed">
+          Cada zona alimenta el factor de rentabilidad: el alquiler estimado se calcula como m² × tarifa.
+        </p>
+      </header>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-5">
+          <div class="flex items-baseline justify-between gap-3">
+            <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Centro · Jerez Centro</h3>
+            <span class="inline-flex items-center rounded-full bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300 text-[10px] font-bold px-2.5 py-0.5">▲ tope</span>
+          </div>
+          <p class="mt-3 text-3xl font-extrabold tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50">10,5 <span class="text-xs font-semibold text-zinc-400 dark:text-zinc-500">€/m²/mes</span></p>
+          <div class="mt-3 h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+            <div class="bar-fill h-full rounded-full bg-violet-500 dark:bg-violet-400" style="width:100%"></div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-5">
+          <div class="flex items-baseline justify-between gap-3">
+            <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Santiago</h3>
+            <span class="text-[10px] text-zinc-400 dark:text-zinc-500 font-semibold">demanda alta</span>
+          </div>
+          <p class="mt-3 text-3xl font-extrabold tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50">9,5 <span class="text-xs font-semibold text-zinc-400 dark:text-zinc-500">€/m²/mes</span></p>
+          <div class="mt-3 h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+            <div class="bar-fill h-full rounded-full bg-zinc-400 dark:bg-zinc-500" style="width:90%"></div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-5">
+          <div class="flex items-baseline justify-between gap-3">
+            <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">San Miguel</h3>
+            <span class="text-[10px] text-zinc-400 dark:text-zinc-500 font-semibold">centro histórico</span>
+          </div>
+          <p class="mt-3 text-3xl font-extrabold tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50">9,0 <span class="text-xs font-semibold text-zinc-400 dark:text-zinc-500">€/m²/mes</span></p>
+          <div class="mt-3 h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+            <div class="bar-fill h-full rounded-full bg-zinc-400 dark:bg-zinc-500" style="width:86%"></div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-5">
+          <div class="flex items-baseline justify-between gap-3">
+            <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">El Puerto</h3>
+            <span class="text-[10px] text-zinc-400 dark:text-zinc-500 font-semibold">referencia provincial</span>
+          </div>
+          <p class="mt-3 text-3xl font-extrabold tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50">8,5 <span class="text-xs font-semibold text-zinc-400 dark:text-zinc-500">€/m²/mes</span></p>
+          <div class="mt-3 h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+            <div class="bar-fill h-full rounded-full bg-zinc-400 dark:bg-zinc-500" style="width:81%"></div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-5">
+          <div class="flex items-baseline justify-between gap-3">
+            <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">La Granja</h3>
+            <span class="text-[10px] text-zinc-400 dark:text-zinc-500 font-semibold">entrada de precio</span>
+          </div>
+          <p class="mt-3 text-3xl font-extrabold tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50">7,0 <span class="text-xs font-semibold text-zinc-400 dark:text-zinc-500">€/m²/mes</span></p>
+          <div class="mt-3 h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+            <div class="bar-fill h-full rounded-full bg-zinc-400 dark:bg-zinc-500" style="width:67%"></div>
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 p-5 flex flex-col justify-between">
+          <p class="text-sm font-semibold text-zinc-600 dark:text-zinc-300">Fórmula del motor</p>
+          <p class="mt-2 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+            Alquiler mensual = m² × tarifa de la microzona.<br>
+            Rentabilidad bruta anual = (alquiler × 12) · 100 / precio de compra.<br>
+            <span class="text-zinc-700 dark:text-zinc-300 font-semibold">Por ejemplo, 78 m² en Centro → ≈ 820 €/mes.</span>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 7 · Infraestructura ===== -->
+    <section id="infraestructura">
+      <header class="mb-8 sm:mb-10">
+        <p class="eyebrow text-zinc-400 dark:text-zinc-500"><span class="text-violet-500 dark:text-violet-400 font-extrabold">06</span>&ensp;Infraestructura desplegada</p>
+        <h2 class="mt-2.5 text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 text-balance">El stack detrás del agente</h2>
+        <p class="mt-3 max-w-2xl text-sm sm:text-base text-zinc-500 dark:text-zinc-400 leading-relaxed">
+          Automatización, API, base de datos, interfaz y despliegue funcionando en producción con coste mínimo.
+        </p>
+      </header>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-5">
+          <div class="w-11 h-11 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xl mb-4">⚙️</div>
+          <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">n8n · RepoCloud</h3>
+          <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed">Orquestación del workflow «Monitor Inmobiliario Jerez» con 7 nodos.</p>
+          <p class="mt-3 text-[11px] font-mono text-zinc-400 dark:text-zinc-500 break-all">https://3fxpxm31.rpcld.cc</p>
+        </div>
+
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-5">
+          <div class="w-11 h-11 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xl mb-4">🐍</div>
+          <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">FastAPI · Uvicorn</h3>
+          <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed">API de análisis en Python 3.11: <span class="font-mono">/api/analizar</span>, <span class="font-mono">/api/inmuebles</span> y <span class="font-mono">/api/resumen</span>.</p>
+        </div>
+
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-5">
+          <div class="w-11 h-11 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xl mb-4">🗄️</div>
+          <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">SQLite · WAL</h3>
+          <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed">Histórico local con deduplicación por URL y recálculo al cambiar los umbrales.</p>
+        </div>
+
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-5">
+          <div class="w-11 h-11 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xl mb-4">📊</div>
+          <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Dashboard web SPA</h3>
+          <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed">HTML + Tailwind zinc, modo oscuro, grid 1–2–3 columnas, filtros y QR de acceso.</p>
+        </div>
+
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-5">
+          <div class="w-11 h-11 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xl mb-4">📲</div>
+          <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Bot Telegram</h3>
+          <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed">Alerta «LLAMAR HOY» al grupo de inversores <span class="font-mono">-5310526404</span> con puntuación y enlace.</p>
+        </div>
+
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-5">
+          <div class="w-11 h-11 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xl mb-4">📋</div>
+          <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Google Sheets</h3>
+          <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed">Histórico de 10 columnas por oportunidad, alimentado desde n8n.</p>
+        </div>
+
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-5">
+          <div class="w-11 h-11 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xl mb-4">🐙</div>
+          <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">GitHub</h3>
+          <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed">Código y despliegue: 23 ficheros con auto-deploy desde el repo.</p>
+          <p class="mt-3 text-[11px] font-mono text-zinc-400 dark:text-zinc-500 break-all">kamal1305/agente-inmobiliario-2</p>
+        </div>
+
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-5">
+          <div class="w-11 h-11 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xl mb-4">☁️</div>
+          <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Render · Docker</h3>
+          <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed">Free tier · 1 worker · auto-deploy desde GitHub · ping cada 8 min.</p>
+          <p class="mt-3 text-[11px] font-mono text-zinc-400 dark:text-zinc-500 break-all">https://agente-inmobiliario-2.onrender.com</p>
+        </div>
+      </div>
+
+      <div class="mt-8 grid sm:grid-cols-3 gap-4 sm:gap-5">
+        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-5">
+          <p class="text-xs font-bold uppercase tracking-wide text-zinc-400 dark:text-zinc-500 mb-3">Equipo operativo</p>
+          <div class="space-y-4">
+            <div class="flex gap-3">
+              <span class="w-9 h-9 rounded-xl bg-white dark:bg-zinc-800 ring-1 ring-zinc-200 dark:ring-zinc-700 flex items-center justify-center shrink-0">👤</span>
+              <div>
+                <p class="text-sm font-bold text-zinc-900 dark:text-zinc-100">Inversor 1</p>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">Dueño del bot y del dashboard; define umbrales y pesos.</p>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <span class="w-9 h-9 rounded-xl bg-white dark:bg-zinc-800 ring-1 ring-zinc-200 dark:ring-zinc-700 flex items-center justify-center shrink-0">🧑‍🤝‍🧑</span>
+              <div>
+                <p class="text-sm font-bold text-zinc-900 dark:text-zinc-100">Inversor 2</p>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">Socio que recibe las alertas en el grupo de Telegram.</p>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <span class="w-9 h-9 rounded-xl bg-white dark:bg-zinc-800 ring-1 ring-zinc-200 dark:ring-zinc-700 flex items-center justify-center shrink-0">🤖</span>
+              <div>
+                <p class="text-sm font-bold text-zinc-900 dark:text-zinc-100">Bot Telegram</p>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">Emisor automático al grupo <span class="font-mono">-5310526404</span>.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sm:col-span-2 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-5 sm:p-6 flex flex-col justify-between">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-wide text-zinc-400 dark:text-zinc-500 mb-3">Dashboard en cifras</p>
+            <p class="text-sm sm:text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
+              Dark mode automático vía <span class="font-mono text-xs bg-white dark:bg-zinc-800 px-1.5 py-0.5 rounded">prefers-color-scheme</span>,
+              grid responsivo de 1 columna en móvil y 2–3 en escritorio, métricas de Total · LLAMAR HOY · REVISAR ·
+              Precio medio, filtros por texto, veredicto y orden, headers sticky y botones táctiles de 44&nbsp;px.
+            </p>
+          </div>
+          <p class="mt-4 text-xs text-zinc-400 dark:text-zinc-500">
+            Acceso rápido del equipo vía código QR: <span class="font-mono">dashboard_qr.png</span>.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 8 · Métricas ===== -->
+    <section id="metricas">
+      <header class="mb-8 sm:mb-10">
+        <p class="eyebrow text-zinc-400 dark:text-zinc-500"><span class="text-violet-500 dark:text-violet-400 font-extrabold">07</span>&ensp;Métricas del proyecto</p>
+        <h2 class="mt-2.5 text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 text-balance">El proyecto en números</h2>
+      </header>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5">
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-5">
+          <div class="h-1 w-8 rounded-full bg-gradient-to-r from-violet-500 to-violet-300 mb-4"></div>
+          <p class="text-4xl sm:text-5xl font-extrabold tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50">2.393</p>
+          <p class="mt-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">líneas de código Python</p>
+          <p class="text-xs text-zinc-400 dark:text-zinc-500">10 módulos del motor y la API</p>
+        </div>
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-5">
+          <div class="h-1 w-8 rounded-full bg-gradient-to-r from-violet-500 to-violet-300 mb-4"></div>
+          <p class="text-4xl sm:text-5xl font-extrabold tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50">734</p>
+          <p class="mt-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">líneas HTML + Tailwind</p>
+          <p class="text-xs text-zinc-400 dark:text-zinc-500">SPA del dashboard rediseñada</p>
+        </div>
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-5">
+          <div class="h-1 w-8 rounded-full bg-gradient-to-r from-violet-500 to-violet-300 mb-4"></div>
+          <p class="text-4xl sm:text-5xl font-extrabold tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50">7</p>
+          <p class="mt-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">nodos del workflow n8n</p>
+          <p class="text-xs text-zinc-400 dark:text-zinc-500">«Monitor Inmobiliario Jerez»</p>
+        </div>
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-5">
+          <div class="h-1 w-8 rounded-full bg-gradient-to-r from-violet-500 to-violet-300 mb-4"></div>
+          <p class="text-4xl sm:text-5xl font-extrabold tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50">4</p>
+          <p class="mt-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">bloques de código JavaScript</p>
+          <p class="text-xs text-zinc-400 dark:text-zinc-500">validados en n8n</p>
+        </div>
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-5">
+          <div class="h-1 w-8 rounded-full bg-gradient-to-r from-violet-500 to-violet-300 mb-4"></div>
+          <p class="text-4xl sm:text-5xl font-extrabold tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50">326</p>
+          <p class="mt-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">variantes <span class="font-mono text-xs">dark:</span> en Tailwind</p>
+          <p class="text-xs text-zinc-400 dark:text-zinc-500">modo oscuro de la SPA</p>
+        </div>
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-5">
+          <div class="h-1 w-8 rounded-full bg-gradient-to-r from-violet-500 to-violet-300 mb-4"></div>
+          <p class="text-4xl sm:text-5xl font-extrabold tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50">23</p>
+          <p class="mt-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">ficheros en el repositorio</p>
+          <p class="text-xs text-zinc-400 dark:text-zinc-500">auto-deploy desde GitHub</p>
+        </div>
+      </div>
+
+      <p class="mt-5 text-xs text-zinc-400 dark:text-zinc-500">Cifras referidas al estado actual del repositorio <span class="font-mono">kamal1305/agente-inmobiliario-2</span>.</p>
+    </section>
+
+    <!-- ===== 9 · Próximos pasos ===== -->
+    <section id="proximos">
+      <header class="mb-8 sm:mb-10">
+        <p class="eyebrow text-zinc-400 dark:text-zinc-500"><span class="text-violet-500 dark:text-violet-400 font-extrabold">08</span>&ensp;Próximos pasos</p>
+        <h2 class="mt-2.5 text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 text-balance">Qué falta por mejorar</h2>
+        <p class="mt-3 max-w-2xl text-sm sm:text-base text-zinc-500 dark:text-zinc-400 leading-relaxed">
+          Roadmap consensuado para seguir ampliando cobertura, calidad y alcance del agente.
+        </p>
+      </header>
+
+      <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm px-5 sm:px-8 divide-y divide-zinc-100 dark:divide-zinc-800">
+
+        <div class="flex gap-4 py-5">
+          <span class="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-lg shrink-0">📡</span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Fuentes adicionales</h3>
+              <span class="rounded-full bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300 text-[10px] font-bold px-2.5 py-0.5">↑ Alta</span>
+            </div>
+            <p class="mt-1 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              Añadir feeds e integraciones de los principales portales para complementar el canal de Gmail.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex gap-4 py-5">
+          <span class="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-lg shrink-0">🧑‍🤝‍🧑</span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Multi-perfil inversor</h3>
+              <span class="rounded-full bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300 text-[10px] font-bold px-2.5 py-0.5">↑ Alta</span>
+            </div>
+            <p class="mt-1 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              Varios perfiles con umbrales distintos y notificación selectiva dentro del grupo de Telegram.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex gap-4 py-5">
+          <span class="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-lg shrink-0">💡</span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Negociación asistida</h3>
+              <span class="rounded-full bg-zinc-200/70 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[10px] font-bold px-2.5 py-0.5">→ Media</span>
+            </div>
+            <p class="mt-1 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              Sugerencia de precio de oferta y argumentario por inmueble según el margen detectado.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex gap-4 py-5">
+          <span class="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-lg shrink-0">📬</span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Resumen semanal por email</h3>
+              <span class="rounded-full bg-zinc-200/70 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[10px] font-bold px-2.5 py-0.5">→ Media</span>
+            </div>
+            <p class="mt-1 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              Informe HTML con evolución de precios por microzona y rotación del histórico de Sheets.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex gap-4 py-5">
+          <span class="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-lg shrink-0">🧪</span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Calidad y CI</h3>
+              <span class="rounded-full bg-zinc-200/70 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[10px] font-bold px-2.5 py-0.5">→ Media</span>
+            </div>
+            <p class="mt-1 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              Suite de tests del motor de scoring ejecutada en GitHub Actions antes de cada despliegue.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex gap-4 py-5">
+          <span class="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-lg shrink-0">💾</span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">Backup de SQLite</h3>
+              <span class="rounded-full bg-zinc-200/70 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[10px] font-bold px-2.5 py-0.5">→ Baja</span>
+            </div>
+            <p class="mt-1 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              Copia automática del histórico a Google Drive con retención de 90 días.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===== 10 · Créditos ===== -->
+    <footer class="border-t border-zinc-200 dark:border-zinc-800 pt-12 pb-4 text-center">
+      <div class="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-br from-zinc-600 to-zinc-900 dark:from-zinc-600 dark:to-zinc-800 ring-1 ring-black/10 dark:ring-white/10 shadow-inner flex items-center justify-center text-xl">🏠</div>
+      <p class="mt-5 text-sm font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">Generado con Claude Code</p>
+      <p class="mt-2 text-xs text-zinc-500 dark:text-zinc-400">Dosier corporativo · Agente Analizador Inmobiliario</p>
+      <p class="mt-1 text-xs text-zinc-400 dark:text-zinc-500">Jerez de la Frontera, Cádiz · 15 de septiembre de 2026 · Edición 1</p>
+      <p class="mt-4 text-[11px] text-zinc-400 dark:text-zinc-600 max-w-md mx-auto leading-relaxed">
+        Cifras referidas al estado actual del repositorio <span class="font-mono">kamal1305/agente-inmobiliario-2</span>
+        y al workflow desplegado en RepoCloud. Los umbrales de inversión son configurables desde el panel.
+      </p>
+    </footer>
+
+  </main>
+
+</body>
+</html>
