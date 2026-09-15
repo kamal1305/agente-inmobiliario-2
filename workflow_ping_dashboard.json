@@ -1,0 +1,54 @@
+{
+  "name": "Ping · mantener dashboard despierto",
+  "meta": {"templateCredsSetupCompleted": false},
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 8
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4e5f6",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0],
+      "notes": "Cada 8 minutos. Render free duerme a los 15 min sin tráfico; este ping lo mantiene despierto."
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://agente-inmobiliario-2.onrender.com/api/resumen",
+        "options": {}
+      },
+      "id": "b2c3d4e5f6a7",
+      "name": "HTTP Request · mantener despierto",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [260, 0],
+      "notes": "GET ligero: despierta y valida que el dashboard responde."
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request · mantener despierto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {"executionOrder": "v1"},
+  "pinData": {},
+  "active": false,
+  "description": "Mantiene el dashboard (https://agente-inmobiliario-2.onrender.com) despierto tocando /api/resumen cada 8 minutos para que Render free no lo duerma."
+}

@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Panel del Agente Analizador Inmobiliario — scoring, veredicto y rentabilidad de cada oportunidad en Jerez de la Frontera.">
+  <meta name="theme-color" content="#18181b">
   <title>Agente Analizador Inmobiliario · Jerez</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
+      darkMode: 'media',
       theme: {
         extend: {
           colors: {
@@ -24,44 +27,48 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     [v-cloak] { display: none; }
-    html { -webkit-font-smoothing: antialiased; }
+    html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-thumb { background: #a1a1aa; border-radius: 8px; }
     ::-webkit-scrollbar-track { background: transparent; }
     .card-hover { transition: transform .15s ease, box-shadow .15s ease; }
-    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 30px -12px rgba(0,0,0,.15); }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 32px -12px rgba(0,0,0,.18); }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
     .fade-up { animation: fadeUp .25s ease both; }
+    @media (prefers-color-scheme: dark) {
+      ::-webkit-scrollbar-thumb { background: #52525b; }
+      .card-hover:hover { box-shadow: 0 12px 36px -12px rgba(0,0,0,.6); }
+    }
   </style>
 </head>
-<body class="bg-zinc-100 text-zinc-900 min-h-screen">
+<body class="bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 min-h-screen antialiased">
 
   <!-- ===== Barra superior ===== -->
-  <header class="bg-zinc-900 text-white sticky top-0 z-30 shadow-lg">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center gap-3">
-      <div class="flex items-center gap-3 mr-auto">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-zinc-600 to-zinc-800 flex items-center justify-center text-xl shadow-inner">🏠</div>
+  <header class="bg-zinc-900 text-white sticky top-0 z-30 border-b border-zinc-800 shadow-lg shadow-zinc-950/20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 sm:py-3 flex flex-wrap items-center gap-2.5">
+      <div class="flex items-center gap-3 mr-auto py-0.5">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-zinc-600 to-zinc-800 flex items-center justify-center text-xl shadow-inner ring-1 ring-white/10">🏠</div>
         <div>
-          <h1 class="font-extrabold text-lg leading-tight tracking-tight">Agente Analizador Inmobiliario</h1>
-          <p class="text-xs text-zinc-400 hidden sm:block">Jerez de la Frontera · 75.000–120.000 € · rentabilidad mín. 7%</p>
+          <h1 class="font-extrabold text-base sm:text-lg leading-tight tracking-tight text-balance">Agente Analizador Inmobiliario</h1>
+          <p class="text-[11px] sm:text-xs text-zinc-400 hidden sm:block">Jerez de la Frontera · 75.000–120.000 € · rentabilidad mín. 7%</p>
         </div>
       </div>
       <div class="flex items-center gap-2 flex-wrap">
-        <button onclick="importarInputs()" class="inline-flex items-center gap-2 bg-zinc-100 hover:bg-white text-zinc-900 text-sm font-semibold px-3.5 py-2 rounded-lg transition">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0l-4-4m4 4l4-4"/></svg>
-          Importar /inputs
+        <button onclick="importarInputs()" aria-label="Importar inputs" class="inline-flex items-center justify-center gap-2 min-h-[44px] bg-zinc-100 hover:bg-white text-zinc-900 text-sm font-semibold px-3.5 rounded-xl transition active:scale-[.98]">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0l-4-4m4 4l4-4"/></svg>
+          <span class="hidden sm:inline">Importar /inputs</span>
         </button>
-        <label for="file-upload" class="inline-flex items-center gap-2 bg-zinc-100 hover:bg-white text-zinc-900 text-sm font-semibold px-3.5 py-2 rounded-lg transition cursor-pointer">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 15V9m0 0l-3 3m3-3l3 3"/></svg>
-          Subir archivo
+        <label for="file-upload" aria-label="Subir archivo" class="inline-flex items-center justify-center gap-2 min-h-[44px] bg-zinc-100 hover:bg-white text-zinc-900 text-sm font-semibold px-3.5 rounded-xl transition cursor-pointer active:scale-[.98]">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 15V9m0 0l-3 3m3-3l3 3"/></svg>
+          <span class="hidden sm:inline">Subir archivo</span>
         </label>
         <input id="file-upload" type="file" accept=".json,.csv,.txt,.md,.html" class="hidden" onchange="subirArchivo(event)">
-        <button onclick="abrirAjustes()" class="inline-flex items-center gap-2 bg-zinc-100 hover:bg-white text-zinc-900 text-sm font-semibold px-3.5 py-2 rounded-lg transition" title="Umbrales y Telegram">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.3 4.3a1 1 0 011.4 0l7 7a1 1 0 010 1.4l-7 7a1 1 0 01-1.4 0l-7-7a1 1 0 010-1.4zM16 8h.01M12 12h.01M8 16h.01"/></svg>
-          Configuración
+        <button onclick="abrirAjustes()" aria-label="Configuración" class="inline-flex items-center justify-center gap-2 min-h-[44px] bg-zinc-100 hover:bg-white text-zinc-900 text-sm font-semibold px-3.5 rounded-xl transition active:scale-[.98]" title="Umbrales y Telegram">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.3 4.3a1 1 0 011.4 0l7 7a1 1 0 010 1.4l-7 7a1 1 0 01-1.4 0l-7-7a1 1 0 010-1.4zM16 8h.01M12 12h.01M8 16h.01"/></svg>
+          <span class="hidden sm:inline">Configuración</span>
         </button>
-        <button onclick="abrirModalPegar()" class="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-bold px-4 py-2 rounded-lg shadow-lg shadow-emerald-900/40 transition">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        <button onclick="abrirModalPegar()" class="inline-flex items-center justify-center gap-2 min-h-[44px] bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-bold px-4 sm:px-5 rounded-xl shadow-lg shadow-emerald-900/40 transition active:scale-[.98]">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
           Pegar anuncio
         </button>
       </div>
@@ -71,208 +78,219 @@
   <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
 
     <!-- ===== KPI Resumen ===== -->
-    <section id="kpis" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6" v-cloak></section>
+    <section id="kpis" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6"></section>
 
     <!-- ===== Barra de filtros ===== -->
-    <section class="bg-white border border-zinc-200 rounded-2xl shadow-sm p-4 mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 items-center">
-        <div class="relative lg:col-span-2">
-          <svg class="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
+    <section class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-3 sm:p-4 mb-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2.5 items-center">
+        <div class="relative sm:col-span-2 xl:col-span-2">
+          <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
+          </span>
           <input id="f-texto" type="search" placeholder="Buscar por título, zona o texto…" oninput="aplicarFiltros()"
-            class="w-full pl-9 pr-3 py-2.5 border border-zinc-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900">
+            class="w-full min-h-[44px] pl-11 pr-10 rounded-full border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm font-medium text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300 focus:border-zinc-500 dark:focus:border-zinc-300">
         </div>
-        <select id="f-veredicto" onchange="aplicarFiltros()" class="px-3 py-2.5 border border-zinc-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900">
-          <option value="">Veredicto: todos</option>
-          <option value="LLAMAR HOY">🟢 Llamar hoy</option>
-          <option value="REVISAR">🟡 Revisar</option>
-          <option value="DESCARTAR">🔴 Descartar</option>
-        </select>
-        <select id="f-rent" onchange="aplicarFiltros()" class="px-3 py-2.5 border border-zinc-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900">
-          <option value="">Rentabilidad ≥ 0%</option>
-          <option value="7">Rentabilidad ≥ 7%</option>
-          <option value="8">Rentabilidad ≥ 8%</option>
-          <option value="9">Rentabilidad ≥ 9%</option>
-          <option value="10">Rentabilidad ≥ 10%</option>
-        </select>
-        <select id="f-orden" onchange="aplicarFiltros()" class="px-3 py-2.5 border border-zinc-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900">
-          <option value="puntuacion_desc">Orden: puntuación ↓</option>
-          <option value="rentabilidad_desc">Orden: rentabilidad ↓</option>
-          <option value="precio_asc">Orden: precio ↑</option>
-          <option value="precio_desc">Orden: precio ↓</option>
-          <option value="fecha_desc">Orden: más reciente</option>
-        </select>
+        <div class="relative">
+          <select id="f-veredicto" onchange="aplicarFiltros()" class="w-full min-h-[44px] appearance-none pl-4 pr-9 rounded-full border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm font-semibold text-zinc-700 dark:text-zinc-200 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300">
+            <option value="">Veredicto: todos</option>
+            <option value="LLAMAR HOY">🟢 Llamar hoy</option>
+            <option value="REVISAR">🟡 Revisar</option>
+            <option value="DESCARTAR">🔴 Descartar</option>
+          </select>
+          <span class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 text-xs">▾</span>
+        </div>
+        <div class="relative">
+          <select id="f-rent" onchange="aplicarFiltros()" class="w-full min-h-[44px] appearance-none pl-4 pr-9 rounded-full border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm font-semibold text-zinc-700 dark:text-zinc-200 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300">
+            <option value="">Rentabilidad ≥ 0%</option>
+            <option value="7">Rentabilidad ≥ 7%</option>
+            <option value="8">Rentabilidad ≥ 8%</option>
+            <option value="9">Rentabilidad ≥ 9%</option>
+            <option value="10">Rentabilidad ≥ 10%</option>
+          </select>
+          <span class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 text-xs">▾</span>
+        </div>
+        <div class="relative">
+          <select id="f-orden" onchange="aplicarFiltros()" class="w-full min-h-[44px] appearance-none pl-4 pr-9 rounded-full border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm font-semibold text-zinc-700 dark:text-zinc-200 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300">
+            <option value="puntuacion_desc">Orden: puntuación ↓</option>
+            <option value="rentabilidad_desc">Orden: rentabilidad ↓</option>
+            <option value="precio_asc">Orden: precio ↑</option>
+            <option value="precio_desc">Orden: precio ↓</option>
+            <option value="fecha_desc">Orden: más reciente</option>
+          </select>
+          <span class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 text-xs">▾</span>
+        </div>
       </div>
     </section>
 
     <!-- ===== Grid de inmuebles ===== -->
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="font-bold text-lg text-zinc-800">Oportunidades <span id="contador" class="text-zinc-500 font-semibold text-sm"></span></h2>
-      <span id="ultima-actualizacion" class="text-xs text-zinc-400"></span>
+    <div class="flex items-center justify-between gap-3 flex-wrap mb-4">
+      <h2 class="font-bold text-lg text-zinc-800 dark:text-zinc-100">Oportunidades <span id="contador" class="text-zinc-500 dark:text-zinc-400 font-semibold text-sm"></span></h2>
+      <span id="ultima-actualizacion" class="text-xs text-zinc-400 dark:text-zinc-500"></span>
     </div>
-    <section id="grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 pb-16"></section>
+    <section id="grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 pb-16"></section>
 
     <div id="vacio" v-cloak class="hidden text-center py-16">
-      <div class="text-6xl mb-4">🏚️</div>
-      <p class="text-zinc-500 font-medium">Aún no hay inmuebles analizados.</p>
-      <p class="text-sm text-zinc-400 mt-1">Pega un anuncio, sube un CSV/JSON o pulsa «Importar /inputs».</p>
+      <div class="text-6xl mb-4 opacity-80">🏚️</div>
+      <p class="text-zinc-500 dark:text-zinc-400 font-medium">Aún no hay inmuebles analizados.</p>
+      <p class="text-sm text-zinc-400 dark:text-zinc-500 mt-1">Pega un anuncio, sube un CSV/JSON o pulsa «Importar /inputs».</p>
     </div>
   </main>
 
   <!-- ===== Modal: Pegar anuncio ===== -->
   <div id="modal-pegar" class="hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-white w-full sm:max-w-2xl rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[92vh] overflow-y-auto">
-      <div class="flex items-center justify-between px-6 py-4 border-b border-zinc-200 sticky top-0 bg-white">
+    <div class="bg-white dark:bg-zinc-900 w-full sm:max-w-2xl rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 sticky top-0 bg-white dark:bg-zinc-900">
         <div>
-          <h3 class="font-bold text-lg">📋 Pegar anuncio / alerta</h3>
-          <p class="text-xs text-zinc-500">El motor extrae precio, m², zona y detecta riesgos automáticamente.</p>
+          <h3 class="font-bold text-lg text-zinc-900 dark:text-zinc-100">📋 Pegar anuncio / alerta</h3>
+          <p class="text-xs text-zinc-500 dark:text-zinc-400">El motor extrae precio, m², zona y detecta riesgos automáticamente.</p>
         </div>
-        <button onclick="cerrarModalPegar()" class="w-9 h-9 rounded-lg hover:bg-zinc-100 font-bold text-zinc-500 transition">✕</button>
+        <button onclick="cerrarModalPegar()" aria-label="Cerrar" class="w-11 h-11 -mr-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 font-bold text-zinc-500 dark:text-zinc-400 transition">✕</button>
       </div>
-      <div class="p-6 space-y-4">
+      <div class="p-5 sm:p-6 space-y-4">
         <div>
-          <label class="block text-sm font-semibold text-zinc-700 mb-1.5">Texto del anuncio / alerta / correo <span class="text-red-500">*</span></label>
+          <label class="block text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">Texto del anuncio / alerta / correo <span class="text-red-500">*</span></label>
           <textarea id="a-texto" rows="6" placeholder="Pe. 'Piso de 78 m² en Jerez centro, 89.000 €. Amueblado, luminoso, ascensor…'"
-            class="w-full border border-zinc-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"></textarea>
+            class="w-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-xl p-3 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300 focus:border-zinc-500 dark:focus:border-zinc-300"></textarea>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div class="col-span-2">
-            <label class="block text-xs font-semibold text-zinc-500 mb-1">Título (opcional)</label>
-            <input id="a-titulo" class="w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900" placeholder="Piso en Jerez centro">
+            <label class="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1">Título (opcional)</label>
+            <input id="a-titulo" class="w-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg px-3 py-2.5 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300" placeholder="Piso en Jerez centro">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-zinc-500 mb-1">Unidad de alquiler (€/m²)</label>
-            <input id="a-m2" type="number" step="any" class="w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900" placeholder="78">
+            <label class="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1">Unidad de alquiler (€/m²)</label>
+            <input id="a-m2" type="number" step="any" class="w-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg px-3 py-2.5 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300" placeholder="78">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-zinc-500 mb-1">Precio (€)</label>
-            <input id="a-precio" type="number" step="any" class="w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900" placeholder="89000">
+            <label class="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1">Precio (€)</label>
+            <input id="a-precio" type="number" step="any" class="w-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg px-3 py-2.5 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300" placeholder="89000">
           </div>
           <div class="col-span-2">
-            <label class="block text-xs font-semibold text-zinc-500 mb-1">Zona (opcional)</label>
-            <input id="a-zona" class="w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900" placeholder="Jerez centro">
+            <label class="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1">Zona (opcional)</label>
+            <input id="a-zona" class="w-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg px-3 py-2.5 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300" placeholder="Jerez centro">
           </div>
           <div class="col-span-2">
-            <label class="block text-xs font-semibold text-zinc-500 mb-1">URL del anuncio (para no duplicar)</label>
-            <input id="a-url" class="w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900" placeholder="https://…">
+            <label class="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1">URL del anuncio (para no duplicar)</label>
+            <input id="a-url" class="w-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg px-3 py-2.5 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300" placeholder="https://…">
           </div>
         </div>
         <div class="flex items-center gap-3 pt-2">
-          <button onclick="analizarPegado()" id="btn-pegar" class="flex-1 bg-zinc-900 hover:bg-zinc-800 text-white font-bold py-3 rounded-xl transition">
+          <button onclick="analizarPegado()" id="btn-pegar" class="flex-1 min-h-[44px] bg-zinc-900 dark:bg-zinc-700 hover:bg-zinc-800 dark:hover:bg-zinc-600 text-white font-bold px-4 py-3 rounded-xl transition active:scale-[.98]">
             ⚡ Analizar ahora
           </button>
-          <button onclick="cerrarModalPegar()" class="px-6 py-3 text-sm font-semibold text-zinc-500 hover:text-zinc-800">Cancelar</button>
+          <button onclick="cerrarModalPegar()" class="min-h-[44px] px-6 py-3 text-sm font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200">Cancelar</button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- ===== Modal de detalle ===== -->
-  <div id="modal-detalle" class="hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
-      <div id="detalle-cab" class="p-6 border-b border-zinc-200"></div>
-      <div id="detalle-cuerpo" class="p-6 space-y-5"></div>
+  <div id="modal-detalle" class="hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white dark:bg-zinc-900 w-full max-w-2xl rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div id="detalle-cab" class="p-5 sm:p-6 border-b border-zinc-200 dark:border-zinc-800"></div>
+      <div id="detalle-cuerpo" class="p-5 sm:p-6 space-y-5"></div>
     </div>
   </div>
 
   <!-- ===== Modal: Configuración ===== -->
   <div id="modal-ajustes" class="hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
-    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl max-h-[92vh] overflow-y-auto">
-      <div class="flex items-center justify-between px-6 py-4 border-b border-zinc-200 sticky top-0 bg-white">
+    <div class="bg-white dark:bg-zinc-900 w-full max-w-lg rounded-2xl shadow-2xl max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 sticky top-0 bg-white dark:bg-zinc-900">
         <div>
-          <h3 class="font-bold text-lg">⚙️ Configuración de inversión</h3>
-          <p class="text-xs text-zinc-500">Se guarda en <code class="bg-zinc-100 px-1 rounded">data/config.json</code> y recalcula todas las oportunidades.</p>
+          <h3 class="font-bold text-lg text-zinc-900 dark:text-zinc-100">⚙️ Configuración de inversión</h3>
+          <p class="text-xs text-zinc-500 dark:text-zinc-400">Se guarda en <code class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-1.5 py-0.5 rounded font-mono">data/config.json</code> y recalcula todas las oportunidades.</p>
         </div>
-        <button onclick="cerrarAjustes()" class="w-9 h-9 rounded-lg hover:bg-zinc-100 font-bold text-zinc-500 transition">✕</button>
+        <button onclick="cerrarAjustes()" aria-label="Cerrar" class="w-11 h-11 -mr-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 font-bold text-zinc-500 dark:text-zinc-400 transition">✕</button>
       </div>
 
-      <div class="p-6 space-y-6">
+      <div class="p-5 sm:p-6 space-y-6">
         <!-- Zona y rango de precio -->
         <div>
-          <p class="text-xs font-bold uppercase tracking-wide text-zinc-400 mb-2">📍 Zona y rango de precio (€)</p>
+          <p class="text-xs font-bold uppercase tracking-wide text-zinc-400 dark:text-zinc-500 mb-2">📍 Zona y rango de precio (€)</p>
           <div class="space-y-3">
-            <div><label class="block text-xs font-semibold text-zinc-600 mb-1">Zona objetivo</label>
-              <input id="cfg-zona" type="text" placeholder="Jerez de la Frontera" class="w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"></div>
+            <div><label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Zona objetivo</label>
+              <input id="cfg-zona" type="text" placeholder="Jerez de la Frontera" class="w-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg px-3 py-2.5 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300"></div>
             <div class="grid grid-cols-2 gap-3">
-              <div><label class="block text-xs font-semibold text-zinc-600 mb-1">Precio mínimo</label>
-                <input id="cfg-rango" type="number" step="any" class="w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"></div>
-              <div><label class="block text-xs font-semibold text-zinc-600 mb-1">Precio máximo</label>
-                <input id="cfg-rango2" type="number" step="any" class="w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"></div>
+              <div><label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Precio mínimo</label>
+                <input id="cfg-rango" type="number" step="any" class="w-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg px-3 py-2.5 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300"></div>
+              <div><label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Precio máximo</label>
+                <input id="cfg-rango2" type="number" step="any" class="w-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg px-3 py-2.5 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300"></div>
             </div>
           </div>
         </div>
 
         <!-- Umbrals numéricos -->
         <div>
-          <p class="text-xs font-bold uppercase tracking-wide text-zinc-400 mb-2">🎯 Umbrales</p>
+          <p class="text-xs font-bold uppercase tracking-wide text-zinc-400 dark:text-zinc-500 mb-2">🎯 Umbrales</p>
           <div class="grid grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold text-zinc-600 mb-1">Máx. €/m²</label>
-              <input id="cfg-precio-m2" type="number" step="any" class="w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"></div>
-            <div><label class="block text-xs font-semibold text-zinc-600 mb-1">Alquiler €/m²/mes</label>
-              <input id="cfg-alquiler" type="number" step="any" class="w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"></div>
-            <div><label class="block text-xs font-semibold text-zinc-600 mb-1">Rentabilidad mín. (%)</label>
-              <input id="cfg-rentmin" type="number" step="any" class="w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"></div>
-            <div><label class="block text-xs font-semibold text-zinc-600 mb-1">Umbral Llamar hoy (pts)</label>
-              <input id="cfg-umbral" type="number" step="any" class="w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"></div>
+            <div><label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Máx. €/m²</label>
+              <input id="cfg-precio-m2" type="number" step="any" class="w-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg px-3 py-2.5 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300"></div>
+            <div><label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Alquiler €/m²/mes</label>
+              <input id="cfg-alquiler" type="number" step="any" class="w-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg px-3 py-2.5 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300"></div>
+            <div><label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Rentabilidad mín. (%)</label>
+              <input id="cfg-rentmin" type="number" step="any" class="w-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg px-3 py-2.5 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300"></div>
+            <div><label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Umbral Llamar hoy (pts)</label>
+              <input id="cfg-umbral" type="number" step="any" class="w-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg px-3 py-2.5 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300"></div>
           </div>
         </div>
 
         <!-- Pesos del scoring -->
         <div>
-          <p class="text-xs font-bold uppercase tracking-wide text-zinc-400 mb-2">⚖️ Pesos del scoring (puntos, idealmente suma 100)</p>
+          <p class="text-xs font-bold uppercase tracking-wide text-zinc-400 dark:text-zinc-500 mb-2">⚖️ Pesos del scoring (puntos, idealmente suma 100)</p>
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold text-zinc-600 mb-1">Descuento</label>
-              <input id="cfg-peso-descuento" type="number" step="any" class="w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"></div>
-            <div><label class="block text-xs font-semibold text-zinc-600 mb-1">Rentabilidad</label>
-              <input id="cfg-peso-rentabilidad" type="number" step="any" class="w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"></div>
-            <div><label class="block text-xs font-semibold text-zinc-600 mb-1">Ubicación</label>
-              <input id="cfg-peso-ubicacion" type="number" step="any" class="w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"></div>
-            <div><label class="block text-xs font-semibold text-zinc-600 mb-1">Reforma</label>
-              <input id="cfg-peso-reforma" type="number" step="any" class="w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"></div>
-            <div><label class="block text-xs font-semibold text-zinc-600 mb-1">Liquidez</label>
-              <input id="cfg-peso-liquidez" type="number" step="any" class="w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"></div>
-            <div><label class="block text-xs font-semibold text-zinc-600 mb-1">Documentación</label>
-              <input id="cfg-peso-documentacion" type="number" step="any" class="w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"></div>
+            <div><label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Descuento</label>
+              <input id="cfg-peso-descuento" type="number" step="any" class="w-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg px-3 py-2.5 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300"></div>
+            <div><label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Rentabilidad</label>
+              <input id="cfg-peso-rentabilidad" type="number" step="any" class="w-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg px-3 py-2.5 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300"></div>
+            <div><label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Ubicación</label>
+              <input id="cfg-peso-ubicacion" type="number" step="any" class="w-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg px-3 py-2.5 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300"></div>
+            <div><label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Reforma</label>
+              <input id="cfg-peso-reforma" type="number" step="any" class="w-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg px-3 py-2.5 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300"></div>
+            <div><label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Liquidez</label>
+              <input id="cfg-peso-liquidez" type="number" step="any" class="w-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg px-3 py-2.5 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300"></div>
+            <div><label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Documentación</label>
+              <input id="cfg-peso-documentacion" type="number" step="any" class="w-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg px-3 py-2.5 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300"></div>
           </div>
         </div>
 
         <!-- Telegram -->
         <div>
-          <p class="text-xs font-bold uppercase tracking-wide text-zinc-400 mb-2">📲 Telegram</p>
-          <label class="flex items-center gap-2 mb-3 text-sm font-semibold text-zinc-700 select-none">
-            <input id="cfg-activo" type="checkbox" class="w-4 h-4 accent-zinc-900">
+          <p class="text-xs font-bold uppercase tracking-wide text-zinc-400 dark:text-zinc-500 mb-2">📲 Telegram</p>
+          <label class="flex items-center gap-2 mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300 select-none">
+            <input id="cfg-activo" type="checkbox" class="w-5 h-5 rounded accent-zinc-900 dark:accent-zinc-200">
             Auto-alerta: notificar automáticamente cada nuevo «Llamar hoy»
           </label>
           <div class="space-y-3">
-            <div><label class="block text-xs font-semibold text-zinc-600 mb-1">Token del bot (de @BotFather)</label>
-              <input id="cfg-token" type="text" placeholder="123456789:AA…" class="w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 monospace"></div>
+            <div><label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Token del bot (de @BotFather)</label>
+              <input id="cfg-token" type="text" placeholder="123456789:AA…" class="w-full font-mono border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg px-3 py-2.5 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300"></div>
             <div>
-              <label class="block text-xs font-semibold text-zinc-600 mb-1">Chat(s) o grupo donde se envía</label>
-              <input id="cfg-chat" type="text" placeholder="12345678, 87654321  o  -1001234567890" class="w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 monospace">
-              <p class="text-[11px] text-zinc-400 mt-1.5">💡 Puedes poner <b>varios IDs separados por comas</b> para que la alerta llegue a más de una persona, o el <b>ID de un grupo de Telegram</b> (empieza por <code class="bg-zinc-100 px-1 rounded">-100…</code>) para compartir las alertas en equipo.</p>
+              <label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Chat(s) o grupo donde se envía</label>
+              <input id="cfg-chat" type="text" placeholder="12345678, 87654321  o  -1001234567890" class="w-full font-mono border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg px-3 py-2.5 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300">
+              <p class="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1.5">💡 Puedes poner <b>varios IDs separados por comas</b> para que la alerta llegue a más de una persona, o el <b>ID de un grupo de Telegram</b> (empieza por <code class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-1.5 py-0.5 rounded font-mono">-100…</code>) para compartir las alertas en equipo.</p>
             </div>
-            <div><label class="block text-xs font-semibold text-zinc-600 mb-1">URL pública del panel (BASE_URL)</label>
-              <input id="cfg-base-url" type="text" placeholder="https://tudominio.com" class="w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 monospace">
-              <p class="text-[11px] text-zinc-400 mt-1.5">🌐 Enlace «Abrir panel del agente» que se adjunta a cada alerta de Telegram.</p></div>
-            <p class="text-[11px] text-zinc-400 mt-1 pt-2 border-t border-zinc-100">🔒 <b>Secretos por entorno (opcional):</b> si el contenedor/daemon define <code class="bg-zinc-100 px-1 rounded">TELEGRAM_BOT_TOKEN</code>, <code class="bg-zinc-100 px-1 rounded">TELEGRAM_CHAT_ID</code> o <code class="bg-zinc-100 px-1 rounded">BASE_URL</code>, esos valores mandan y el panel pasa a mostrarlos en solo-lectura (se gestionan desde el despliegue, no desde aquí).</p>
+            <div><label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">URL pública del panel (BASE_URL)</label>
+              <input id="cfg-base-url" type="text" placeholder="https://tudominio.com" class="w-full font-mono border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg px-3 py-2.5 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-300">
+              <p class="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1.5">🌐 Enlace «Abrir panel del agente» que se adjunta a cada alerta de Telegram.</p></div>
+            <p class="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1 pt-2 border-t border-zinc-100 dark:border-zinc-800">🔒 <b>Secretos por entorno (opcional):</b> si el contenedor/daemon define <code class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-1.5 py-0.5 rounded font-mono">TELEGRAM_BOT_TOKEN</code>, <code class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-1.5 py-0.5 rounded font-mono">TELEGRAM_CHAT_ID</code> o <code class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-1.5 py-0.5 rounded font-mono">BASE_URL</code>, esos valores mandan y el panel pasa a mostrarlos en solo-lectura (se gestionan desde el despliegue, no desde aquí).</p>
           </div>
         </div>
 
-        <div class="flex items-center gap-3 pt-2 border-t border-zinc-100">
-          <button onclick="guardarAjustes()" id="btn-guardar-ajustes" class="flex-1 bg-zinc-900 hover:bg-zinc-800 text-white font-bold py-3 rounded-xl transition">Guardar configuración</button>
-          <button onclick="cerrarAjustes()" class="px-6 py-3 text-sm font-semibold text-zinc-500 hover:text-zinc-800">Cancelar</button>
+        <div class="flex items-center gap-3 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+          <button onclick="guardarAjustes()" id="btn-guardar-ajustes" class="flex-1 min-h-[44px] bg-zinc-900 dark:bg-zinc-700 hover:bg-zinc-800 dark:hover:bg-zinc-600 text-white font-bold px-4 py-3 rounded-xl transition active:scale-[.98]">Guardar configuración</button>
+          <button onclick="cerrarAjustes()" class="min-h-[44px] px-6 py-3 text-sm font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200">Cancelar</button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- ===== Toast ===== -->
-  <div id="toast" class="hidden fixed bottom-5 right-5 z-50 bg-zinc-900 text-white px-5 py-3 rounded-xl shadow-2xl text-sm font-medium fade-up"></div>
+  <div id="toast" class="hidden fixed bottom-5 right-5 z-50 bg-zinc-900 text-white px-5 py-3.5 rounded-xl shadow-2xl shadow-zinc-950/40 text-sm font-medium fade-up"></div>
 
   <!-- ===== Spinner ===== -->
-  <div id="spinner" class="hidden fixed inset-0 z-50 bg-black/30 flex items-center justify-center">
-    <div class="bg-white rounded-2xl px-8 py-6 shadow-2xl flex items-center gap-3">
-      <div class="w-6 h-6 border-4 border-zinc-300 border-t-zinc-900 rounded-full animate-spin"></div>
-      <span class="font-semibold text-zinc-700">Analizando…</span>
+  <div id="spinner" class="hidden fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center">
+    <div class="bg-white dark:bg-zinc-900 rounded-2xl px-8 py-6 shadow-2xl flex items-center gap-3">
+      <div class="w-6 h-6 border-4 border-zinc-300 dark:border-zinc-700 border-t-zinc-900 dark:border-t-zinc-100 rounded-full animate-spin"></div>
+      <span class="font-semibold text-zinc-700 dark:text-zinc-200">Analizando…</span>
     </div>
   </div>
 
@@ -321,30 +339,30 @@
       try {
         const r = await api('/api/resumen');
         $('kpis').innerHTML = `
-          <div class="bg-white border border-zinc-200 rounded-2xl shadow-sm p-5 flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-zinc-100 flex items-center justify-center text-2xl">🏘️</div>
-            <div><p class="text-3xl font-extrabold leading-none">${r.total}</p><p class="text-sm text-zinc-500 mt-1 font-medium">Total analizados</p></div>
+          <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
+            <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-2xl shrink-0">🏘️</div>
+            <div class="min-w-0"><p class="text-2xl sm:text-3xl font-extrabold leading-none tabular-nums">${r.total}</p><p class="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1 font-medium truncate">Total inmuebles</p></div>
           </div>
-          <div class="bg-white border border-zinc-200 rounded-2xl shadow-sm p-5 flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center text-2xl">📞</div>
-            <div><p class="text-3xl font-extrabold leading-none text-emerald-600">${r.llamar_hoy}</p><p class="text-sm text-zinc-500 mt-1 font-medium">Llamar hoy</p></div>
+          <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
+            <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-2xl shrink-0">📞</div>
+            <div class="min-w-0"><p class="text-2xl sm:text-3xl font-extrabold leading-none tabular-nums text-emerald-600 dark:text-emerald-400">${r.llamar_hoy}</p><p class="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1 font-medium truncate">Llamar hoy</p></div>
           </div>
-          <div class="bg-white border border-zinc-200 rounded-2xl shadow-sm p-5 flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-2xl">📊</div>
-            <div><p class="text-3xl font-extrabold leading-none text-amber-600">${r.rentabilidad_media}%</p><p class="text-sm text-zinc-500 mt-1 font-medium">Rentabilidad media bruta</p></div>
+          <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
+            <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center text-2xl shrink-0">⚖️</div>
+            <div class="min-w-0"><p class="text-2xl sm:text-3xl font-extrabold leading-none tabular-nums text-amber-600 dark:text-amber-400">${r.revisar}</p><p class="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1 font-medium truncate">Revisar</p></div>
           </div>
-          <div class="bg-white border border-zinc-200 rounded-2xl shadow-sm p-5 flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center text-2xl">💶</div>
-            <div><p class="text-3xl font-extrabold leading-none">${fmtEuro(r.precio_medio)}</p><p class="text-sm text-zinc-500 mt-1 font-medium">Precio medio</p></div>
+          <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
+            <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center text-2xl shrink-0">💶</div>
+            <div class="min-w-0"><p class="text-2xl sm:text-3xl font-extrabold leading-none tabular-nums">${fmtEuro(r.precio_medio)}</p><p class="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1 font-medium truncate">Precio medio</p></div>
           </div>`;
       } catch (e) { toast(e.message); }
     }
 
     // ---------- Render ----------
     const BADGES = {
-      'LLAMAR HOY':  { cls: 'bg-emerald-100 text-emerald-800 border-emerald-300',  icon: '🟢' },
-      'REVISAR':     { cls: 'bg-amber-100 text-amber-800 border-amber-300',       icon: '🟡' },
-      'DESCARTAR':   { cls: 'bg-red-100 text-red-800 border-red-300',             icon: '🔴' },
+      'LLAMAR HOY':  { cls: 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800',  icon: '🟢' },
+      'REVISAR':     { cls: 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800',       icon: '🟡' },
+      'DESCARTAR':   { cls: 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 border-red-300 dark:border-red-800',                     icon: '🔴' },
     };
 
     function veredictoColor(v) { return BADGES[v] || BADGES['REVISAR']; }
@@ -372,79 +390,79 @@
       const minRent = rentMin();
 
       return `
-      <article class="card-hover bg-white border border-zinc-200 rounded-2xl shadow-sm overflow-hidden fade-up" style="animation-delay:${Math.min(i * 40, 300)}ms">
-        <div class="p-5">
+      <article class="card-hover bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden fade-up" style="animation-delay:${Math.min(i * 40, 300)}ms">
+        <div class="p-4 sm:p-5">
           <div class="flex items-start justify-between gap-3 mb-3">
             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-bold ${badge.cls}">
               ${badge.icon} ${d.veredicto}
             </span>
-            <span class="w-12 h-12 shrink-0 rounded-xl flex flex-col items-center justify-center ${d.puntuacion >= minPts ? 'bg-emerald-600 text-white' : d.puntuacion >= 55 ? 'bg-amber-500 text-white' : 'bg-red-500 text-white'}" title="Puntuación">
-              <span class="text-base font-extrabold leading-none">${Number(d.puntuacion).toFixed(0)}</span>
+            <span class="w-12 h-12 shrink-0 rounded-xl flex flex-col items-center justify-center ${d.puntuacion >= minPts ? 'bg-emerald-600 text-white' : d.puntuacion >= 55 ? 'bg-amber-500 text-white' : 'bg-red-500 text-white'} shadow-sm" title="Puntuación">
+              <span class="text-base font-extrabold leading-none tabular-nums">${Number(d.puntuacion).toFixed(0)}</span>
               <span class="text-[9px] opacity-80">/100</span>
             </span>
           </div>
 
-          <h3 class="font-bold text-zinc-900 leading-snug mb-1 line-clamp-2">${escapar(d.titulo || 'Sin título')}</h3>
-          <p class="text-sm text-zinc-500 mb-4">📍 ${escapar(d.zona || '—')}</p>
+          <h3 class="font-bold text-zinc-900 dark:text-zinc-100 leading-snug mb-1 line-clamp-2 text-balance">${escapar(d.titulo || 'Sin título')}</h3>
+          <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-4">📍 ${escapar(d.zona || '—')}</p>
 
           <div class="grid grid-cols-4 gap-2 text-center mb-4">
             ${stat('Precio', fmtEuro(d.precio))}
             ${stat('m²', d.m2 ?? '—')}
             ${stat('€/m²', d.precio_eur_m2 ? d.precio_eur_m2.toLocaleString('es-ES') : '—')}
-            ${stat('Rent.', d.rentabilidad_bruta != null ? d.rentabilidad_bruta.toFixed(1) + '%' : '—', d.rentabilidad_bruta != null && d.rentabilidad_bruta >= minRent ? 'text-emerald-600' : '')}
+            ${stat('Rent.', d.rentabilidad_bruta != null ? d.rentabilidad_bruta.toFixed(1) + '%' : '—', d.rentabilidad_bruta != null && d.rentabilidad_bruta >= minRent ? 'text-emerald-600 dark:text-emerald-400' : '')}
           </div>
 
-          <div class="bg-zinc-50 border border-zinc-200 rounded-xl p-3 mb-3">
+          <div class="bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 rounded-xl p-3 mb-3">
             <div class="flex items-center justify-between text-sm">
-              <span class="font-semibold text-zinc-700">💡 Valor objetivo (${minRent.toFixed(0)}%)</span>
-              <span class="font-extrabold text-zinc-900">${fmtEuro(d.precio_compra_recomendado)}</span>
+              <span class="font-semibold text-zinc-700 dark:text-zinc-300">💡 Valor objetivo (${minRent.toFixed(0)}%)</span>
+              <span class="font-extrabold text-zinc-900 dark:text-zinc-100 tabular-nums">${fmtEuro(d.precio_compra_recomendado)}</span>
             </div>
             <div class="flex items-center justify-between mt-1">
-              <span class="text-[11px] text-zinc-400">Alquiler zona: ${fmtEuro(d.alquiler_estimado_mes)}/mes</span>
+              <span class="text-[11px] text-zinc-400 dark:text-zinc-500">Alquiler zona: ${fmtEuro(d.alquiler_estimado_mes)}/mes</span>
               ${margenBadge(d)}
             </div>
           </div>
 
           <ul class="space-y-1 mb-4">
-            ${motivos.map(m => `<li class="text-xs text-zinc-600 flex gap-1.5"><span class="text-violet-500 shrink-0">→</span><span>${escapar(m)}</span></li>`).join('')}
+            ${motivos.map(m => `<li class="text-xs text-zinc-600 dark:text-zinc-300 flex gap-1.5"><span class="text-violet-500 dark:text-violet-400 shrink-0">→</span><span>${escapar(m)}</span></li>`).join('')}
           </ul>
 
-          ${rojas.length ? `<div class="bg-red-50 border border-red-200 rounded-xl p-3 mb-4">
-            <p class="text-xs font-bold text-red-700 mb-1">🚩 Banderas rojas</p>
-            ${rojas.map(r => `<span class="inline-block bg-red-100 text-red-700 text-xs font-semibold px-2 py-0.5 rounded-full mr-1 mb-1">${escapar(r)}</span>`).join('')}
+          ${rojas.length ? `<div class="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-xl p-3 mb-4">
+            <p class="text-xs font-bold text-red-700 dark:text-red-300 mb-1">🚩 Banderas rojas</p>
+            ${rojas.map(r => `<span class="inline-block bg-red-100 dark:bg-red-900/60 text-red-700 dark:text-red-300 text-xs font-semibold px-2 py-0.5 rounded-full mr-1 mb-1">${escapar(r)}</span>`).join('')}
           </div>` : ''}
 
-          <div class="flex items-center gap-2 border-t border-zinc-100 pt-3">
-            ${d.url ? `<a href="${escapar(d.url)}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-xs font-semibold text-violet-600 hover:text-violet-800">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg> Ver anuncio</a>` : '<a href="${mapHref}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-xs font-semibold text-violet-600 hover:text-violet-800">🧭 Mapa</a>'}
-            <span class="ml-auto inline-flex items-center gap-1.5 text-[11px] text-zinc-400">
+          <div class="flex items-center gap-2 border-t border-zinc-100 dark:border-zinc-800 pt-3">
+            ${d.url ? `<a href="${escapar(d.url)}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-xs font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-800 dark:hover:text-violet-300">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg> Ver anuncio</a>` : '<a href="${mapHref}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-xs font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-800 dark:hover:text-violet-300">🧭 Mapa</a>'}
+            <span class="ml-auto inline-flex items-center gap-1.5 text-[11px] text-zinc-400 dark:text-zinc-500">
               ${iconFuente(d.fuente)} ${escapar(d.fuente || '')}
             </span>
           </div>
 
-          <div class="mt-3 flex gap-2">
-            <a href="${mapHref}" target="_blank" rel="noopener" class="flex-1 border border-zinc-300 hover:border-violet-400 hover:text-violet-700 text-zinc-600 text-xs font-bold py-2 rounded-lg transition text-center">🧭 Mapa</a>
-            <button onclick="abrirDetalle(${d.id})" class="flex-1 bg-zinc-900 hover:bg-zinc-700 text-white text-xs font-bold py-2 rounded-lg transition">Detalle</button>
-            <button onclick="enviarTelegram(${d.id}, this)" class="flex-1 border border-zinc-300 hover:bg-sky-50 hover:border-sky-400 hover:text-sky-700 text-zinc-600 text-xs font-bold py-2 rounded-lg transition">📲 Telegram</button>
+          <div class="mt-3 grid grid-cols-3 gap-2">
+            <a href="${mapHref}" target="_blank" rel="noopener" class="inline-flex items-center justify-center min-h-[44px] border border-zinc-300 dark:border-zinc-700 hover:border-violet-400 hover:text-violet-700 dark:hover:border-violet-600 dark:hover:text-violet-300 text-zinc-600 dark:text-zinc-300 text-xs font-bold rounded-xl transition">🧭 Mapa</a>
+            <button onclick="abrirDetalle(${d.id})" class="inline-flex items-center justify-center min-h-[44px] bg-zinc-900 dark:bg-zinc-700 hover:bg-zinc-700 dark:hover:bg-zinc-600 text-white text-xs font-bold rounded-xl transition">Detalle</button>
+            <button onclick="enviarTelegram(${d.id}, this)" class="inline-flex items-center justify-center min-h-[44px] border border-zinc-300 dark:border-zinc-700 hover:bg-sky-50 hover:border-sky-400 hover:text-sky-700 dark:hover:bg-sky-900/40 dark:hover:border-sky-600 dark:hover:text-sky-300 text-zinc-600 dark:text-zinc-300 text-xs font-bold rounded-xl transition">📲 Telegram</button>
           </div>
           <div class="mt-2">
-            <button onclick="cambiarEstado(${d.id}, 'contactado')" class="w-full border border-zinc-300 hover:bg-emerald-50 hover:border-emerald-400 hover:text-emerald-700 text-zinc-600 text-xs font-bold py-2 rounded-lg transition">Marcar contactado</button>
+            <button onclick="cambiarEstado(${d.id}, 'contactado')" class="w-full min-h-[44px] border border-zinc-300 dark:border-zinc-700 hover:bg-emerald-50 hover:border-emerald-400 hover:text-emerald-700 dark:hover:bg-emerald-900/40 dark:hover:border-emerald-600 dark:hover:text-emerald-300 text-zinc-600 dark:text-zinc-300 text-xs font-bold rounded-xl transition">Marcar contactado</button>
           </div>
         </div>
       </article>`;
     }
 
     function stat(etiqueta, valor, extra = '') {
-      return `<div class="flex flex-col"><span class="text-[10px] uppercase tracking-wide text-zinc-400 font-semibold">${etiqueta}</span><span class="text-sm font-bold text-zinc-800 ${extra}">${valor}</span></div>`;
+      return `<div class="flex flex-col"><span class="text-[10px] uppercase tracking-wide text-zinc-400 dark:text-zinc-500 font-semibold">${etiqueta}</span><span class="text-sm font-bold text-zinc-800 dark:text-zinc-200 tabular-nums ${extra}">${valor}</span></div>`;
     }
     function margenBadge(d) {
       if (d.precio == null || d.precio_compra_recomendado == null) return '<span></span>';
       const obj = d.precio_compra_recomendado;
       const margen = ((d.precio - obj) / obj) * 100;
       if (d.precio <= obj) {
-        return `<span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">▼ ${Math.abs(margen).toFixed(0)}% bajo valor → ganga</span>`;
+        return `<span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/50 px-2 py-0.5 rounded-full tabular-nums">▼ ${Math.abs(margen).toFixed(0)}% bajo valor → ganga</span>`;
       }
-      return `<span class="inline-flex items-center gap-1 text-[11px] font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full">▲ ${Math.abs(margen).toFixed(0)}% sobre valor</span>`;
+      return `<span class="inline-flex items-center gap-1 text-[11px] font-bold text-red-600 dark:text-red-300 bg-red-100 dark:bg-red-900/50 px-2 py-0.5 rounded-full tabular-nums">▲ ${Math.abs(margen).toFixed(0)}% sobre valor</span>`;
     }
     function iconFuente(f) {
       const t = (f || '').toLowerCase();
@@ -517,11 +535,11 @@
         <div class="flex items-start justify-between gap-3">
           <div>
             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-bold ${badge.cls} mb-2">${badge.icon} ${d.veredicto}</span>
-            <h3 class="text-xl font-extrabold text-zinc-900 leading-snug">${escapar(d.titulo)}</h3>
-            <p class="text-sm text-zinc-500 mt-0.5">📍 ${escapar(d.zona || '—')} · ${iconFuente(d.fuente)} ${escapar(d.fuente || '')}</p>
+            <h3 class="text-xl font-extrabold text-zinc-900 dark:text-zinc-100 leading-snug text-balance">${escapar(d.titulo)}</h3>
+            <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">📍 ${escapar(d.zona || '—')} · ${iconFuente(d.fuente)} ${escapar(d.fuente || '')}</p>
           </div>
-          <span class="w-16 h-16 shrink-0 rounded-2xl flex flex-col items-center justify-center ${d.puntuacion >= minPts ? 'bg-emerald-600 text-white' : d.puntuacion >= 55 ? 'bg-amber-500 text-white' : 'bg-red-500 text-white'}">
-            <span class="text-2xl font-extrabold leading-none">${Number(d.puntuacion).toFixed(0)}</span>
+          <span class="w-16 h-16 shrink-0 rounded-2xl flex flex-col items-center justify-center ${d.puntuacion >= minPts ? 'bg-emerald-600 text-white' : d.puntuacion >= 55 ? 'bg-amber-500 text-white' : 'bg-red-500 text-white'} shadow-md">
+            <span class="text-2xl font-extrabold leading-none tabular-nums">${Number(d.puntuacion).toFixed(0)}</span>
             <span class="text-[10px] opacity-80">pts /100</span>
           </span>
         </div>`;
@@ -534,57 +552,57 @@
           ${detailStat('Superficie', (d.m2 ?? '—') + ' m²', '📐')}
           ${detailStat('Precio / m²', d.precio_eur_m2 ? d.precio_eur_m2.toLocaleString('es-ES') + ' €' : '—', '🏷️')}
           ${detailStat('Alquiler estim.', fmtEuro(d.alquiler_estimado_mes) + '/mes', '🔑')}
-          ${detailStat('Rentabilidad', (d.rentabilidad_bruta ?? '—') + ' %', '📊', d.rentabilidad_bruta != null && d.rentabilidad_bruta >= minRent ? 'text-emerald-600' : '')}
+          ${detailStat('Rentabilidad', (d.rentabilidad_bruta ?? '—') + ' %', '📊', d.rentabilidad_bruta != null && d.rentabilidad_bruta >= minRent ? 'text-emerald-600 dark:text-emerald-400' : '')}
           ${detailStat('Valor objetivo (' + minRent.toFixed(0) + '%)', fmtEuro(d.precio_compra_recomendado), '🎯')}
           ${detailStat('ID', d.id, '🆔')}
           ${detailStat('Fecha análisis', d.fecha_analisis ? new Date(d.fecha_analisis).toLocaleDateString('es-ES') : '—', '📅')}
         </div>
 
         <div>
-          <h4 class="font-bold text-sm text-zinc-800 mb-2">Desglose de puntuación</h4>
+          <h4 class="font-bold text-sm text-zinc-800 dark:text-zinc-100 mb-2">Desglose de puntuación</h4>
           <div class="space-y-2">
             ${[['Descuento', pct.descuento, 35], ['Rentabilidad', pct.rentabilidad, 25], ['Ubicación / microzona', pct.ubicacion, 15],
                ['Reforma asumible', pct.reforma, 10], ['Liquidez alquiler/reventa', pct.liquidez, 10], ['Documentación', pct.documentacion, 5]]
               .map(([n, v, max]) => `
                 <div class="flex items-center gap-3">
-                  <span class="w-44 text-xs font-medium text-zinc-600">${n}</span>
-                  <div class="flex-1 h-2.5 bg-zinc-100 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-zinc-700 to-zinc-500 rounded-full transition-all" style="width:${Math.min(100, (v / max) * 100)}%"></div></div>
-                  <span class="w-16 text-right text-xs font-bold text-zinc-700">${Number(v).toFixed(0)} / ${max}</span>
+                  <span class="w-40 sm:w-44 shrink-0 text-xs font-medium text-zinc-600 dark:text-zinc-400">${n}</span>
+                  <div class="flex-1 h-2.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-zinc-700 to-zinc-500 dark:from-zinc-500 dark:to-zinc-400 rounded-full transition-all" style="width:${Math.min(100, (v / max) * 100)}%"></div></div>
+                  <span class="w-16 shrink-0 text-right text-xs font-bold text-zinc-700 dark:text-zinc-300 tabular-nums">${Number(v).toFixed(0)} / ${max}</span>
                 </div>`).join('')}
           </div>
         </div>
 
         <div>
-          <h4 class="font-bold text-sm text-zinc-800 mb-2">Motivos del veredicto</h4>
+          <h4 class="font-bold text-sm text-zinc-800 dark:text-zinc-100 mb-2">Motivos del veredicto</h4>
           <ul class="space-y-1.5">
-            ${(d.motivos || []).map(m => `<li class="text-sm text-zinc-700 flex gap-2"><span class="text-violet-500 mt-0.5">→</span>${escapar(m)}</li>`).join('') || '<li class="text-sm text-zinc-400">—</li>'}
+            ${(d.motivos || []).map(m => `<li class="text-sm text-zinc-700 dark:text-zinc-300 flex gap-2"><span class="text-violet-500 dark:text-violet-400 mt-0.5">→</span>${escapar(m)}</li>`).join('') || '<li class="text-sm text-zinc-400 dark:text-zinc-500">—</li>'}
           </ul>
         </div>
 
-        ${(d.banderas_rojas || []).length ? `<div class="bg-red-50 border border-red-200 rounded-xl p-4">
-          <p class="text-xs font-bold text-red-700 mb-1.5">🚩 Banderas rojas detectadas</p>
-          <p class="text-sm text-red-600 font-medium">${(d.banderas_rojas || []).map(r => `«${escapar(r)}»`).join(', ')}</p>
-          <p class="text-xs text-red-500 mt-1 mt-2">⚠️ Riesgo de ocupación, posesión o documentación. No avanza como oportunidad.</p>
+        ${(d.banderas_rojas || []).length ? `<div class="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-xl p-4">
+          <p class="text-xs font-bold text-red-700 dark:text-red-300 mb-1.5">🚩 Banderas rojas detectadas</p>
+          <p class="text-sm text-red-600 dark:text-red-400 font-medium">${(d.banderas_rojas || []).map(r => `«${escapar(r)}»`).join(', ')}</p>
+          <p class="text-xs text-red-500 dark:text-red-400 mt-1.5">⚠️ Riesgo de ocupación, posesión o documentación. No avanza como oportunidad.</p>
         </div>` : ''}
 
-        ${d.url ? `<a href="${escapar(d.url)}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 text-sm font-bold text-violet-600 hover:text-violet-800">🔗 ${escapar(d.url)}</a>` : ''}
-        <a href="${mapHref}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 text-sm font-bold text-emerald-600 hover:text-emerald-800">🧭 Ver zona en Google Maps</a>
+        ${d.url ? `<a href="${escapar(d.url)}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 text-sm font-bold text-violet-600 dark:text-violet-400 hover:text-violet-800 dark:hover:text-violet-300">🔗 ${escapar(d.url)}</a>` : ''}
+        <a href="${mapHref}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 text-sm font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300">🧭 Ver zona en Google Maps</a>
 
-        <div class="flex gap-3 pt-2 border-t border-zinc-100">
-          <button onclick="enviarTelegram(${d.id}, this)" class="flex-1 border border-zinc-300 bg-sky-50 hover:bg-sky-100 text-sky-700 font-bold py-2.5 rounded-xl transition">📲 Enviar a Telegram</button>
-          <button onclick="cambiarEstado(${d.id}, 'contactado'); cerrarDetalle()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl transition">📞 Contactar</button>
-          <button onclick="cambiarEstado(${d.id}, 'descartado'); cerrarDetalle()" class="flex-1 border border-zinc-300 text-zinc-600 hover:text-red-600 hover:border-red-300 font-bold py-2.5 rounded-xl transition">Descartar</button>
-          <button onclick="eliminar(${d.id}, true)" class="flex-1 border border-zinc-200 text-zinc-400 hover:text-red-500 font-bold py-2.5 rounded-xl transition" title="Eliminar del inventario">Eliminar</button>
+        <div class="grid sm:grid-cols-4 gap-2 sm:gap-3 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+          <button onclick="enviarTelegram(${d.id}, this)" class="min-h-[44px] border border-zinc-300 dark:border-zinc-700 bg-sky-50 dark:bg-sky-900/40 hover:bg-sky-100 dark:hover:bg-sky-900/70 text-sky-700 dark:text-sky-300 font-bold rounded-xl transition">📲 Enviar a Telegram</button>
+          <button onclick="cambiarEstado(${d.id}, 'contactado'); cerrarDetalle()" class="min-h-[44px] bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition">📞 Contactar</button>
+          <button onclick="cambiarEstado(${d.id}, 'descartado'); cerrarDetalle()" class="min-h-[44px] border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:text-red-600 dark:hover:text-red-400 hover:border-red-300 dark:hover:border-red-700 font-bold rounded-xl transition">Descartar</button>
+          <button onclick="eliminar(${d.id}, true)" class="min-h-[44px] border border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 hover:text-red-500 dark:hover:text-red-400 font-bold rounded-xl transition" title="Eliminar del inventario">Eliminar</button>
         </div>
-        <button onclick="cerrarDetalle()" class="w-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold py-2.5 rounded-xl transition mt-2">Cerrar</button>`;
+        <button onclick="cerrarDetalle()" class="w-full min-h-[44px] bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 font-bold rounded-xl transition mt-2">Cerrar</button>`;
       $('modal-detalle').classList.remove('hidden');
     }
     function cerrarDetalle() { $('modal-detalle').classList.add('hidden'); }
     function detailStat(n, v, icono, extra='') {
-      return `<div class="bg-zinc-50 border border-zinc-200 rounded-xl p-3">
+      return `<div class="bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 rounded-xl p-3">
         <div class="text-lg mb-1">${icono}</div>
-        <div class="text-sm font-extrabold text-zinc-800 ${extra}">${v}</div>
-        <div class="text-[10px] uppercase tracking-wide text-zinc-400 font-semibold mt-0.5">${n}</div>
+        <div class="text-sm font-extrabold text-zinc-800 dark:text-zinc-100 tabular-nums ${extra}">${v}</div>
+        <div class="text-[10px] uppercase tracking-wide text-zinc-400 dark:text-zinc-500 font-semibold mt-0.5">${n}</div>
       </div>`;
     }
 
